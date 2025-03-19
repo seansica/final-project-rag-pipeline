@@ -1,0 +1,41 @@
+[project]
+name = "rag267"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Sean Sica", email = "23294618+seansica@users.noreply.github.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "accelerate>=1.5.2",
+    "arxiv>=2.1.3",
+    "bs4>=0.0.2",
+    "chromadb>=0.6.3",
+    "cohere>=5.14.0",
+    "datasets>=3.4.0",
+    "einops>=0.8.1",
+    "langchain>=0.3.20",
+    "langchain-cohere>=0.4.3",
+    "langchain-community>=0.3.19",
+    "langchain-huggingface>=0.1.2",
+    "langchainhub>=0.1.21",
+    "loguru>=0.7.3",
+    "loralib>=0.1.2",
+    "pymupdf>=1.25.4",
+    "python-dotenv>=1.0.1",
+    "qdrant-client>=1.13.3",
+    "rich>=13.9.4",
+    "sentencepiece>=0.2.0",
+    "transformers>=4.49.0",
+    "typer>=0.15.2",
+    "wikipedia>=1.4.0",
+    "xmltodict>=0.14.2",
+]
+
+[project.scripts]
+rag267 = "rag267.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

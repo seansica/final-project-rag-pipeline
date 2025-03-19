@@ -1,0 +1,1 @@
+uvx ipython --with ipython,transformers,langchain,langchain-huggingface,langchain-cohere,langchain-text-splitters,langchain-community,torch,sentencepiece,datasets,loralib,bitsandbytes,accelerate,einops,faiss-gpu,bs4,qdrant-client,langchainhub,wikipedia,arxiv,pymupdf,cohere
