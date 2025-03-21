@@ -20,6 +20,13 @@ from langchain_community.vectorstores import Qdrant
 class SupportedGeneratorModels(enum.Enum):
     MistralInstructV2 = "mistralai/Mistral-7B-Instruct-v0.2"
 
+class ModelType(enum.Enum):
+    Mistral = "mistral"
+    Cohere = "cohere"
+
+class Team(enum.Enum):
+    Engineering = "engineering"
+    Marketing = "marketing"
 
 class RAGSystem:
     def __init__(
@@ -138,10 +145,26 @@ class RAGSystem:
         docs = self.query_vectorstore(query)
         return [doc.metadata for doc in docs]
 
-    def answer_for_engineers(self, query: str) -> str:
-        """Generate an answer for the engineering team."""
-        if not self.mistral_llm:
-            raise ValueError("Mistral model not initialized")
+    def invoke(self, team: str, model: str, query: str) -> str:
+        """Generate an answer for the specified team."""
+
+        if not isinstance(model, ModelType):
+            raise ValueError(f"Invalid model type: {model}")
+
+        if not isinstance(team, Team):
+            raise ValueError(f"Invalid team: {team}")
+
+        if model == ModelType.Mistral:
+          if not self.mistral_llm:
+              raise ValueError("Mistral model not initialized")
+          llm = self.mistral_llm
+
+        if model == ModelType.Cohere:
+          if not self.cohere_llm:
+            raise ValueError("Cohere model not initialized")
+          llm = self.cohere_llm
+
+        team_prompt = self.engineering_prompt if team == Team.Engineering else self.marketing_prompt
 
         # Create chain
         chain = (
@@ -149,40 +172,23 @@ class RAGSystem:
                 "context": self.retriever | self.format_docs,
                 "question": RunnablePassthrough(),
             }
-            | self.engineering_prompt
-            | self.mistral_llm
+            | team_prompt
+            | llm
             | self.output_parser
         )
 
         # Run chain
         return chain.invoke(query)
 
-    def answer_for_marketing(self, query: str) -> str:
-        if not self.cohere_llm:
-            llm = self.mistral_llm if self.mistral_llm else None
-            if not llm:
-                raise ValueError("No LLM initialized")
-        else:
-            llm = self.cohere_llm
-
-        chain = (
-            {
-                "context": self.retriever | self.format_docs,
-                "question": RunnablePassthrough(),
-            }
-            | self.marketing_prompt
-            | llm
-            | self.output_parser
-        )
-
-        return chain.invoke(query)
-
-    def generate_responses(self, query: str) -> Dict[str, str]:
+    def generate_responses(self, model: str, query: str) -> Dict[str, str]:
         """Generate responses for both engineering and marketing teams."""
-        engineering_response = self.answer_for_engineers(query)
-        marketing_response = self.answer_for_marketing(query)
+        engineering_response = self.invoke(Team.Engineering, model, query)
+        marketing_response = self.invoke(Team.Marketing, model, query)
 
-        return {"engineering": engineering_response, "marketing": marketing_response}
+        return {
+            "engineering": engineering_response,
+            "marketing": marketing_response
+        }
 
     def get_document_sources(self, query: str) -> List[str]:
         docs = self.query_vectorstore(query)
