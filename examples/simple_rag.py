@@ -1,6 +1,5 @@
 """Simple example of using the RAG267 package."""
 
-import os
 from dotenv import load_dotenv
 
 from rag267.indexing.embedding_model import get_embedding_model

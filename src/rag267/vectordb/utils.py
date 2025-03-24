@@ -1,8 +1,7 @@
-import os
 import bs4
 import enum
 from loguru import logger
-from typing import List, Tuple, Any, Dict, Optional
+from typing import List, Any, Dict, Optional
 from dataclasses import dataclass
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -15,6 +14,17 @@ from langchain_community.document_loaders import (
 )
 from langchain_core.documents import Document
 
+
+class SupportedGeneratorModels(enum.Enum):
+    MistralInstructV2 = "mistralai/Mistral-7B-Instruct-v0.2"
+
+class ModelType(enum.Enum):
+    Mistral = "mistral"
+    Cohere = "cohere"
+
+class Team(enum.Enum):
+    Engineering = "engineering"
+    Marketing = "marketing"
 
 class SupportedEmbeddingModels(enum.Enum):
     MpNetBaseV2 = "all-mpnet-base-v2"
@@ -327,60 +337,3 @@ def hydrate_vector_db(
         doc_id += 1
 
     logger.info(f"Finished hydrating vector database with {doc_id - 1} documents")
-
-
-# Example usage
-def example_usage():
-    # Initialize vector database
-    vectorstore = initialize_vector_db(
-        embedding_model_name="multi-qa-mpnet-base-dot-v1",
-        collection_name="rag_tech_db",
-        in_memory=True,
-        force_recreate=True,
-    )
-
-    # Define data sources
-    data_sources = [
-        # ArXiv papers
-        DataSource(identifier="2005.11401", source_type=SourceType.ARXIV),
-        DataSource(identifier="2104.07567", source_type=SourceType.ARXIV),
-        # Wikipedia articles
-        DataSource(
-            identifier="Generative Artificial Intelligence",
-            source_type=SourceType.WIKIPEDIA,
-        ),
-        DataSource(
-            identifier="Large Language Models",
-            source_type=SourceType.WIKIPEDIA,
-            additional_metadata={"category": "AI Models"},
-        ),
-        # Websites
-        DataSource(
-            identifier="https://lilianweng.github.io/posts/2023-06-23-agent/",
-            source_type=SourceType.WEBSITE,
-        ),
-        DataSource(
-            identifier="https://lilianweng.github.io/posts/2020-10-29-odqa/",
-            source_type=SourceType.WEBSITE,
-            additional_metadata={"author": "Lilian Weng"},
-        ),
-    ]
-
-    # Hydrate vector database
-    hydrate_vector_db(
-        vectorstore=vectorstore,
-        data_sources=data_sources,
-        chunk_size=128,
-        chunk_overlap=0,
-    )
-
-    # Return the vectorstore for further use
-    return vectorstore
-
-
-if __name__ == "__main__":
-    # Run example
-    vectorstore = example_usage()
-
-    # Now vectorstore can be used for retrieval, etc.
-    retriever = vectorstore.as_retriever()

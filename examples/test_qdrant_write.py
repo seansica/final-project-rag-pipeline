@@ -1,40 +1,14 @@
 # Setup and imports
-import torch
 import os
 import bs4
-import json
-import numpy as np
-import time
-from pprint import pprint
 import locale
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from transformers import pipeline, BitsAndBytesConfig
-from langchain_huggingface import HuggingFacePipeline
-from langchain.llms import HuggingFacePipeline
-from langchain_cohere import ChatCohere
-from langchain import PromptTemplate, LLMChain
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_text_splitters import CharacterTextSplitter
-from langchain_core.output_parsers import StrOutputParser
-from langchain import hub
 from langchain_community.document_loaders import WebBaseLoader
-from langchain_community.document_loaders import TextLoader
-from langchain_community.vectorstores import FAISS
-from langchain_community.vectorstores import Chroma
 from langchain_community.vectorstores import Qdrant
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.utils.math import cosine_similarity
 
-from langchain_community.document_loaders import ArxivLoader
-from langchain_community.document_loaders import TextLoader
-from langchain_community.document_loaders import WikipediaLoader
-from langchain_community.document_loaders import OnlinePDFLoader
-from langchain_community.document_loaders import PyMuPDFLoader
-from langchain_community.document_loaders import PubMedLoader
 
 from dotenv import load_dotenv
 
