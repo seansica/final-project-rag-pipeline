@@ -131,8 +131,8 @@ def create_phase1_experiments() -> List[ExperimentConfig]:
     """Create Phase 1 experiments: Embedding Model Comparison"""
     
     # Define the core parameters to test
-    rag_models = ["mistral"]
-    team_types = ["engineering", "marketing"]
+    rag_models = ["mistral"] # TODO readd cohere
+    team_types = ["marketing"] # TODO readd engineering
     
     # Embedding models to test
     embedding_models = [
@@ -345,6 +345,9 @@ def create_target_function(rag_system: RAGSystem, team: Team):
 
 def run_evaluation(config: ExperimentConfig, cohere_api_key: str) -> Dict[str, Any]:
     """Run a single evaluation with given experiment configuration."""
+    import gc
+    import torch
+    
     # Initialize vector database manager
     vdm = VectorDatabaseManager(
         embedding_model_name=config.embedding_model,
@@ -384,6 +387,7 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str) -> Dict[str, A
     logger.info(f"Starting evaluation: {experiment_id}")
     
     start_time = time.time()
+    result_data = {}
     
     try:
         result = client.evaluate(
@@ -397,7 +401,7 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str) -> Dict[str, A
         elapsed_time = time.time() - start_time
         logger.info(f"Evaluation completed in {elapsed_time:.1f} seconds: {experiment_id}")
         
-        return {
+        result_data = {
             "experiment_id": experiment_id,
             "config": config.to_dict(),
             "success": True,
@@ -407,12 +411,36 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str) -> Dict[str, A
     except Exception as e:
         logger.error(f"Error in evaluation {experiment_id}: {e}", exc_info=True)
         
-        return {
+        result_data = {
             "experiment_id": experiment_id,
             "config": config.to_dict(),
             "success": False,
             "error": str(e),
         }
+    
+    # Clean up to prevent memory leaks
+    if config.rag_type == "mistral" and hasattr(rag_system, "llm") and hasattr(rag_system.llm, "pipeline"):
+        logger.info(f"Cleaning up Mistral model for {experiment_id}")
+        if hasattr(rag_system.llm.pipeline, "model"):
+            # Delete the model to free GPU memory
+            del rag_system.llm.pipeline.model
+            
+        # Delete the pipeline
+        del rag_system.llm.pipeline
+        
+    # Delete the RAG system and vector DB manager
+    del rag_system
+    del vdm
+    
+    # Force garbage collection
+    gc.collect()
+    
+    # If using CUDA, clear CUDA cache
+    if torch.cuda.is_available():
+        logger.info("Clearing CUDA cache")
+        torch.cuda.empty_cache()
+        
+    return result_data
 
 
 def run_experiment_phase(
@@ -458,15 +486,49 @@ def run_experiment_phase(
     with open(f"{output_dir}/experiment_plan.json", "w") as f:
         json.dump([config.to_dict() for config in experiments], f, indent=4)
     
-    # Run experiments in parallel
+    # Run experiments in a strategic order to avoid GPU memory issues
     results = []
     
-    logger.info(f"Running {len(experiments)} experiments for Phase {phase} with {max_parallel} concurrent workers")
+    # Sort experiments so that Mistral experiments are run separately
+    # Group by LLM type
+    cohere_experiments = [exp for exp in experiments if exp.rag_type == "cohere"]
+    mistral_experiments = [exp for exp in experiments if exp.rag_type == "mistral"]
     
-    with ThreadPoolExecutor(max_workers=max_parallel) as executor:
-        futures = {executor.submit(run_evaluation, config, cohere_api_key): config for config in experiments}
+    # Reorganize the experiments to avoid running multiple Mistral models at once
+    ordered_experiments = cohere_experiments + mistral_experiments
+    
+    logger.info(f"Running {len(ordered_experiments)} experiments for Phase {phase} with max_parallel={max_parallel}")
+    logger.info(f"Running {len(cohere_experiments)} Cohere experiments, then {len(mistral_experiments)} Mistral experiments")
+    
+    # Only run one experiment at a time if Mistral is involved - Mistral models can't be parallelized on a single GPU
+    actual_parallel = 1 if phase == 1 or len(mistral_experiments) > 0 else max_parallel
+    logger.info(f"Setting actual parallelism to {actual_parallel} workers due to GPU memory constraints")
+    
+    with ThreadPoolExecutor(max_workers=actual_parallel) as executor:
+        futures = {}
         
-        for future in tqdm(futures, desc=f"Running Phase {phase} experiments"):
+        # Submit all experiments
+        for config in ordered_experiments:
+            future = executor.submit(run_evaluation, config, cohere_api_key)
+            futures[future] = config
+            
+            # If this is a Mistral model, wait for it to complete before submitting another
+            if config.rag_type == "mistral":
+                logger.info(f"Waiting for Mistral experiment to complete before submitting another")
+                future.result()
+                
+                # Save intermediate results immediately after each Mistral experiment
+                if hasattr(future, 'result') and callable(getattr(future, 'result')):
+                    result = future.result()
+                    results.append(result)
+                    
+                    # Save intermediate results after each experiment
+                    with open(f"{output_dir}/results.json", "w") as f:
+                        json.dump(results, f, indent=4)
+        
+        # For any non-Mistral models that are still running, collect their results
+        remaining_futures = [f for f in futures.keys() if not f.done()]
+        for future in tqdm(remaining_futures, desc=f"Running Phase {phase} experiments"):
             result = future.result()
             results.append(result)
             
