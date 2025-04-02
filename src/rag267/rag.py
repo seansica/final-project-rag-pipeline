@@ -1,7 +1,5 @@
 import time
-from typing import Dict, List, Optional, Any
-# import enum
-# from dotenv import load_dotenv
+from typing import Dict, List, Optional, Any, Union, Callable
 from loguru import logger
 import torch
 from transformers import (
@@ -15,21 +13,11 @@ from langchain_cohere import ChatCohere
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-# from langchain_community.vectorstores import Qdrant
+from langchain_core.retrievers import BaseRetriever
 
 from .vectordb.manager import VectorDatabaseManager
 from .vectordb.utils import SupportedGeneratorModels, ModelType, Team
 
-# class SupportedGeneratorModels(enum.Enum):
-#     MistralInstructV2 = "mistralai/Mistral-7B-Instruct-v0.2"
-
-# class ModelType(enum.Enum):
-#     Mistral = "mistral"
-#     Cohere = "cohere"
-
-# class Team(enum.Enum):
-#     Engineering = "engineering"
-#     Marketing = "marketing"
 
 class RAGSystem:
     def __init__(
@@ -42,26 +30,35 @@ class RAGSystem:
         use_mistral: bool = False,
         mistral_model_name: SupportedGeneratorModels = SupportedGeneratorModels.MistralInstructV2,
         top_k: int = 4,
+        retriever_type: str = "similarity",
+        retriever_kwargs: Optional[Dict[str, Any]] = None,
     ):
 
         if use_cohere and use_mistral:
             raise ValueError("use_cohere and use_mistral cannot both be True. Choose one LLM.")
 
-        # load_dotenv()
+        # Default retriever_kwargs if none provided
+        if retriever_kwargs is None:
+            retriever_kwargs = {"k": top_k}
+        
+        # If k not in kwargs but top_k provided, add it
+        if "k" not in retriever_kwargs and top_k is not None:
+            retriever_kwargs["k"] = top_k
 
         self.config = {
             'llm': {},
-            'top_k': top_k,
+            'retriever': {
+                'type': retriever_type,
+                'kwargs': retriever_kwargs,
+            },
             'engineering_template_path': engineering_template_path,
             'marketing_template_path': marketing_template_path,
         }
 
-        # self.hf_token = os.getenv('HF_TOKEN')
-
         self.vdm = vector_db_manager
         self.top_k = top_k
-        # self.vectorstore = vdm.vectorstore
-        # self.retriever = vector_db_manager.vectorstore.as_retriever(search_kwargs={"k": top_k})
+        self.retriever_type = retriever_type
+        self.retriever_kwargs = retriever_kwargs
 
         if use_mistral:
             self.llm = self._init_mistral(mistral_model_name)
@@ -84,8 +81,50 @@ class RAGSystem:
         self.output_parser = StrOutputParser()
 
     @property
-    def retriever(self):
-        return self.vdm.vectorstore.as_retriever(search_kwargs={"k": self.top_k})
+    def retriever(self) -> BaseRetriever:
+        """Configure and return the appropriate retriever based on retriever_type"""
+        if self.retriever_type == "similarity":
+            return self.vdm.vectorstore.as_retriever(search_kwargs=self.retriever_kwargs)
+        elif self.retriever_type == "mmr":
+            return self.vdm.vectorstore.as_retriever(
+                search_type="mmr",
+                search_kwargs=self.retriever_kwargs
+            )
+        elif self.retriever_type == "similarity_score_threshold":
+            kwargs = self.retriever_kwargs.copy()
+            score_threshold = kwargs.pop("score_threshold", 0.5)
+            return self.vdm.vectorstore.as_retriever(
+                search_type="similarity_score_threshold",
+                search_kwargs={**kwargs, "score_threshold": score_threshold}
+            )
+        elif self.retriever_type == "multi_query":
+            from langchain.retrievers import MultiQueryRetriever
+            
+            llm_for_queries = self.llm  # Default to same LLM
+            # If specified in kwargs, use that instead
+            if "llm_for_queries" in self.retriever_kwargs:
+                llm_key = self.retriever_kwargs["llm_for_queries"]
+                # Initialize the specific LLM for query generation
+                # This is simplified - you'd need proper initialization based on model type
+                if llm_key == "mistral":
+                    from langchain_community.llms import HuggingFacePipeline as HFPipeline
+                    llm_for_queries = HFPipeline(model_name=SupportedGeneratorModels.MistralInstructV2.value)
+                elif llm_key == "cohere":
+                    api_key = self.retriever_kwargs.get("api_key", None)
+                    llm_for_queries = ChatCohere(cohere_api_key=api_key, model="command-r")
+            
+            kwargs = {k: v for k, v in self.retriever_kwargs.items() 
+                     if k not in ["llm_for_queries", "api_key"]}
+            
+            base_retriever = self.vdm.vectorstore.as_retriever(search_kwargs=kwargs)
+            
+            return MultiQueryRetriever.from_llm(
+                retriever=base_retriever,
+                llm=llm_for_queries
+            )
+        else:
+            logger.warning(f"Unknown retriever type: {self.retriever_type}, falling back to similarity search")
+            return self.vdm.vectorstore.as_retriever(search_kwargs=self.retriever_kwargs)
 
     def get_config(self) -> dict:
         summary = {
@@ -197,9 +236,6 @@ class RAGSystem:
             | self.output_parser
         )
 
-        # Run chain without retry:
-        # return chain.invoke(query)
-        
         # Run chain with retry logic:
         max_retries = 3
         retry_delay = 10  # seconds
