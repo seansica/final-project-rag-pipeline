@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 from rag267.rag import RAGSystem
 from rag267.vectordb.utils import Team, SupportedGeneratorModels
 from rag267.vectordb.manager import VectorDatabaseManager
+from rag267.data_sources import data_sources
 from rag267.evals.correctness import correctness
 from rag267.evals.relevance import relevance
 from rag267.evals.retrieval_relevance import retrieval_relevance
@@ -165,6 +166,10 @@ def run_concurrent_evaluations(args):
         in_memory=True,
         force_recreate=True,
     )
+    
+    # Hydrate vector database with data sources from data_sources.py
+    logger.info(f"Hydrating vector database with {len(data_sources)} data sources")
+    vdm.hydrate(data_sources)
 
     # Initialize RAG systems with shared vector database
     rag_system_cohere = initialize_rag_system(
@@ -234,9 +239,9 @@ def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Run concurrent RAG evaluations")
     parser.add_argument("--top_k", type=int, default=4, help="Number of documents to retrieve")
-    parser.add_argument("--eng_template", type=str, default="templates/eng_template.txt", 
+    parser.add_argument("--eng_template", type=str, default="templates/engineering_template.txt", 
                         help="Path to engineering template")
-    parser.add_argument("--mkt_template", type=str, default="templates/mkt_template.txt", 
+    parser.add_argument("--mkt_template", type=str, default="templates/marketing_template.txt", 
                         help="Path to marketing template")
     parser.add_argument("--embedding_model", type=str, default="multi-qa-mpnet-base-dot-v1", 
                         help="Embedding model name")

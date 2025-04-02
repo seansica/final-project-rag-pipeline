@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 from rag267.rag import RAGSystem
 from rag267.vectordb.utils import Team, SupportedGeneratorModels
 from rag267.vectordb.manager import VectorDatabaseManager
+from rag267.data_sources import data_sources
 from rag267.evals.correctness import correctness
 from rag267.evals.relevance import relevance
 from rag267.evals.retrieval_relevance import retrieval_relevance
@@ -62,6 +63,10 @@ def main():
         in_memory=True,
         force_recreate=True,
     )
+    
+    # Hydrate vector database with data sources from data_sources.py
+    logger.info(f"Hydrating vector database with {len(data_sources)} data sources")
+    vdm.hydrate(data_sources)
 
     logger.info(f"Initializing RAG system with {rag_type} model")
     
