@@ -19,5 +19,26 @@
         },
         "success": true,
         "elapsed_time": 1659.34739279747
+    },
+    {
+        "experiment_id": "rag-mistral-engineering-emb-all-mpnet-base-v2-cs128-co0-k4",
+        "config": {
+            "rag_type": "mistral",
+            "team_type": "engineering",
+            "embedding_model": "all-mpnet-base-v2",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1516.972468137741
     }
 ]
