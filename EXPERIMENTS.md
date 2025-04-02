@@ -15,6 +15,10 @@ Phase 1 tests different embedding models with fixed baseline parameters.
 | 5 | mistral | all-mpnet-base-v2 | 128 | 0 | 4 | similarity |
 | 6 | mistral | all-MiniLM-L6-v2 | 128 | 0 | 4 | similarity |
 
+NOTE TO SELF:
+- All Engineering experiments are done
+- Just need to run Mistral + Marketing experiments (3) to complete phase 1
+
 ## Phase 2: Chunk Size and Overlap Optimization
 
 Phase 2 tests different chunk sizes and overlaps with the best embedding model from Phase 1.
