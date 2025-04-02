@@ -1,0 +1,23 @@
+[
+    {
+        "experiment_id": "rag-mistral-engineering-emb-multi-qa-mpnet-base-dot-v1-cs128-co0-k4",
+        "config": {
+            "rag_type": "mistral",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-dot-v1",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1659.34739279747
+    }
+]
