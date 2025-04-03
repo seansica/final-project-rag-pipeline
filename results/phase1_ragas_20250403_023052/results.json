@@ -1,0 +1,68 @@
+[
+    {
+        "experiment_id": "ragas-rag-cohere-engineering-emb-multi-qa-mpnet-base-dot-v1-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-dot-v1",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 819.511168718338,
+        "evaluation_type": "ragas"
+    },
+    {
+        "experiment_id": "ragas-rag-cohere-engineering-emb-all-mpnet-base-v2-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "all-mpnet-base-v2",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 812.0926606655121,
+        "evaluation_type": "ragas"
+    },
+    {
+        "experiment_id": "ragas-rag-cohere-engineering-emb-all-MiniLM-L6-v2-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "all-MiniLM-L6-v2",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 874.5907661914825,
+        "evaluation_type": "ragas"
+    }
+]
