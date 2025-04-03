@@ -214,6 +214,19 @@ class RAGSystem:
         docs = self.query_vectorstore(query)
         return [doc.metadata for doc in docs]
 
+    def clean_response(self, response: str) -> str:
+        """Clean up LLM response to extract only the model's answer.
+        
+        Removes the instruction prompt and any other artifacts, keeping only the 
+        generated content from the LLM.
+        """
+        # If the response contains [/INST], extract only the text after it
+        if "[/INST]" in response:
+            return response.split("[/INST]", 1)[1].strip()
+        
+        # For other formats, just return the original response
+        return response
+
     def invoke(self, team: Team, query: str) -> str:
         """Generate an answer for the engineering team."""
 
@@ -242,7 +255,9 @@ class RAGSystem:
         
         for attempt in range(max_retries):
             try:
-                return chain.invoke(query)
+                response = chain.invoke(query)
+                # Clean the response to extract only the model's answer
+                return self.clean_response(response)
             except Exception as e:
                 if attempt < max_retries - 1:  # Don't sleep after the last attempt
                     logger.warning(f"Error during invoke (attempt {attempt+1}/{max_retries}): {e}")

@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 """
 Wrapper script to run a single RAG evaluation with specific parameters.
-Usage: python run_evaluation.py cohere engineering 4 templates/eng_template.txt templates/mkt_template.txt multi-qa-mpnet-base-dot-v1 128 0
+Usage: 
+  Standard evaluation:
+  python run_single_evaluation.py cohere engineering 4 templates/engineering_template.txt templates/marketing_template.txt multi-qa-mpnet-base-dot-v1 128 0
+  
+  Ragas evaluation:
+  python run_single_evaluation.py cohere engineering 4 templates/engineering_template.txt templates/marketing_template.txt multi-qa-mpnet-base-dot-v1 128 0 --ragas
 """
 import sys
 import json
 import os
 import time
+import argparse
 from dotenv import load_dotenv
 from langsmith import Client
 from langchain_openai import ChatOpenAI
@@ -30,21 +36,35 @@ from rag267.evals.correctness import correctness
 from rag267.evals.relevance import relevance
 from rag267.evals.retrieval_relevance import retrieval_relevance
 from rag267.evals.groundedness import groundedness
+from rag267.evals.faithfulness import ragas_faithfulness
+from rag267.evals.response_relevancy import ragas_response_relevancy
+from rag267.evals.answer_accuracy import ragas_answer_accuracy
+from rag267.evals.context_relevance import ragas_context_relevance
 
 def main():
-    # Parse command-line arguments
-    if len(sys.argv) != 9:
-        print("Usage: python run_evaluation.py <rag_type> <team_type> <top_k> <eng_template> <mkt_template> <embedding_model> <chunk_size> <chunk_overlap>")
-        sys.exit(1)
-
-    rag_type = sys.argv[1]  # 'cohere' or 'mistral'
-    team_type = sys.argv[2]  # 'engineering' or 'marketing'
-    top_k = int(sys.argv[3])
-    engineering_template = sys.argv[4]
-    marketing_template = sys.argv[5]
-    embedding_model_name = sys.argv[6]
-    chunk_size = int(sys.argv[7])
-    chunk_overlap = int(sys.argv[8])
+    # Parse command-line arguments using argparse
+    parser = argparse.ArgumentParser(description="Run a single RAG evaluation")
+    parser.add_argument("rag_type", choices=["cohere", "mistral"], help="RAG system type ('cohere' or 'mistral')")
+    parser.add_argument("team_type", choices=["engineering", "marketing"], help="Team type ('engineering' or 'marketing')")
+    parser.add_argument("top_k", type=int, help="Number of documents to retrieve")
+    parser.add_argument("eng_template", help="Path to engineering template")
+    parser.add_argument("mkt_template", help="Path to marketing template")
+    parser.add_argument("embedding_model", help="Embedding model name")
+    parser.add_argument("chunk_size", type=int, help="Chunk size for text splitting")
+    parser.add_argument("chunk_overlap", type=int, help="Chunk overlap for text splitting")
+    parser.add_argument("--ragas", action="store_true", help="Use only Ragas evaluations (answer_accuracy, context_relevance, faithfulness, response_relevancy)")
+    
+    args = parser.parse_args()
+    
+    rag_type = args.rag_type
+    team_type = args.team_type
+    top_k = args.top_k
+    engineering_template = args.eng_template
+    marketing_template = args.mkt_template
+    embedding_model_name = args.embedding_model
+    chunk_size = args.chunk_size
+    chunk_overlap = args.chunk_overlap
+    use_ragas = args.ragas
 
     # Get API keys
     cohere_api_key = os.getenv("COHERE_API_KEY_PROD")
@@ -135,6 +155,10 @@ def main():
     experiment_prefix = (f"rag-{rag_type}-{team_type}-k{top_k}-"
                         f"emb{embedding_model_name.split('/')[-1]}-"
                         f"cs{chunk_size}-co{chunk_overlap}")
+    
+    # Modify prefix if using Ragas
+    if use_ragas:
+        experiment_prefix = f"ragas-{experiment_prefix}"
 
     logger.info(f"Experiment ID: {experiment_prefix}")
 
@@ -163,10 +187,28 @@ def main():
     start_time = time.time()
     
     try:
+        # Choose which evaluators to use based on the ragas flag
+        if use_ragas:
+            logger.info("Using Ragas evaluations only")
+            evaluators = [
+                ragas_answer_accuracy, 
+                ragas_context_relevance, 
+                ragas_faithfulness, 
+                ragas_response_relevancy
+            ]
+        else:
+            logger.info("Using original evaluations")
+            evaluators = [
+                correctness, 
+                groundedness, 
+                relevance, 
+                retrieval_relevance
+            ]
+        
         result = client.evaluate(
             target,
             data=dataset_name,
-            evaluators=[correctness, groundedness, relevance, retrieval_relevance],
+            evaluators=evaluators,
             experiment_prefix=experiment_prefix,
             metadata=rag_system.get_config(),
         )

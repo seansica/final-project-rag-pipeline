@@ -32,6 +32,10 @@ from rag267.evals.correctness import correctness
 from rag267.evals.relevance import relevance
 from rag267.evals.retrieval_relevance import retrieval_relevance
 from rag267.evals.groundedness import groundedness
+from rag267.evals.faithfulness import ragas_faithfulness
+from rag267.evals.response_relevancy import ragas_response_relevancy
+from rag267.evals.answer_accuracy import ragas_answer_accuracy
+from rag267.evals.context_relevance import ragas_context_relevance
 
 
 def initialize_rag_system(rag_type: str, vdm: VectorDatabaseManager, 
@@ -135,7 +139,7 @@ def run_evaluation(rag_type: str, team_type: str, rag_system: RAGSystem,
         result = client.evaluate(
             target,
             data=dataset_name,
-            evaluators=[correctness, groundedness, relevance, retrieval_relevance],
+            evaluators=[correctness, groundedness, relevance, retrieval_relevance, ragas_faithfulness, ragas_response_relevancy, ragas_answer_accuracy, ragas_context_relevance],
             experiment_prefix=experiment_prefix,
             metadata=rag_system.get_config(),
         )

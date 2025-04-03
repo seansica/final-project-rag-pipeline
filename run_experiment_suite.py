@@ -48,6 +48,10 @@ from rag267.evals.correctness import correctness
 from rag267.evals.relevance import relevance
 from rag267.evals.retrieval_relevance import retrieval_relevance
 from rag267.evals.groundedness import groundedness
+# from rag267.evals.faithfulness import ragas_faithfulness
+# from rag267.evals.response_relevancy import ragas_response_relevancy
+# from rag267.evals.answer_accuracy import ragas_answer_accuracy
+# from rag267.evals.context_relevance import ragas_context_relevance
 from langsmith import Client
 
 
@@ -131,8 +135,8 @@ def create_phase1_experiments() -> List[ExperimentConfig]:
     """Create Phase 1 experiments: Embedding Model Comparison"""
     
     # Define the core parameters to test
-    rag_models = ["mistral"] # TODO readd cohere
-    team_types = ["marketing"] # TODO readd engineering
+    rag_models = ["cohere"] # TODO readd cohere
+    team_types = ["engineering"] # TODO readd engineering
     
     # Embedding models to test
     embedding_models = [
@@ -343,6 +347,7 @@ def create_target_function(rag_system: RAGSystem, team: Team):
     return target
 
 
+# def run_evaluation(config: ExperimentConfig, cohere_api_key: str, use_ragas: bool = False) -> Dict[str, Any]:
 def run_evaluation(config: ExperimentConfig, cohere_api_key: str) -> Dict[str, Any]:
     """Run a single evaluation with given experiment configuration."""
     import gc
@@ -384,16 +389,42 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str) -> Dict[str, A
     
     # Get experiment ID
     experiment_id = config.get_experiment_id()
+    # if use_ragas:
+    #     experiment_id = f"ragas-{experiment_id}"
     logger.info(f"Starting evaluation: {experiment_id}")
     
     start_time = time.time()
     result_data = {}
     
     try:
+        # Choose which evaluators to use based on the ragas flag
+        evaluators = [
+            correctness, 
+            groundedness, 
+            relevance, 
+            retrieval_relevance
+        ]
+        # if use_ragas:
+        #     logger.info("Using Ragas evaluations only")
+        #     evaluators = [
+        #         ragas_answer_accuracy, 
+        #         ragas_context_relevance, 
+        #         ragas_faithfulness, 
+        #         ragas_response_relevancy
+        #     ]
+        # else:
+        #     logger.info("Using original evaluations")
+        #     evaluators = [
+        #         correctness, 
+        #         groundedness, 
+        #         relevance, 
+        #         retrieval_relevance
+        #     ]
+        
         result = client.evaluate(
             target,
             data=dataset_name,
-            evaluators=[correctness, groundedness, relevance, retrieval_relevance],
+            evaluators=evaluators,
             experiment_prefix=experiment_id,
             metadata=rag_system.get_config(),
         )
@@ -406,6 +437,7 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str) -> Dict[str, A
             "config": config.to_dict(),
             "success": True,
             "elapsed_time": elapsed_time,
+            # "evaluation_type": "ragas" if use_ragas else "original"
         }
     
     except Exception as e:
@@ -416,6 +448,7 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str) -> Dict[str, A
             "config": config.to_dict(),
             "success": False,
             "error": str(e),
+            # "evaluation_type": "ragas" if use_ragas else "original"
         }
     
     # Clean up to prevent memory leaks
@@ -447,7 +480,8 @@ def run_experiment_phase(
     phase: int, 
     max_parallel: int = 2,
     best_params: Optional[Dict[str, Any]] = None,
-    output_dir: Optional[str] = None
+    output_dir: Optional[str] = None,
+    # use_ragas: bool = False
 ) -> Dict[str, Any]:
     """Run experiments for a specific phase"""
     
@@ -460,6 +494,8 @@ def run_experiment_phase(
     # Create timestamp-based directory if not provided
     if not output_dir:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # eval_type = "ragas" if use_ragas else "standard"
+        # output_dir = f"results/phase{phase}_{eval_type}_{timestamp}"
         output_dir = f"results/phase{phase}_{timestamp}"
     
     os.makedirs(output_dir, exist_ok=True)
@@ -509,6 +545,7 @@ def run_experiment_phase(
         
         # Submit all experiments
         for config in ordered_experiments:
+            # future = executor.submit(run_evaluation, config, cohere_api_key, use_ragas)
             future = executor.submit(run_evaluation, config, cohere_api_key)
             futures[future] = config
             
@@ -574,6 +611,10 @@ def parse_arguments():
     parser.add_argument("--chunk_overlap", type=int, default=None,
                        help="Best chunk overlap from Phase 2 (required for Phase 3)")
     
+    # Evaluation selector
+    # parser.add_argument("--ragas", action="store_true",
+    #                    help="Use only Ragas evaluations (answer_accuracy, context_relevance, faithfulness, response_relevancy)")
+    
     return parser.parse_args()
 
 
@@ -596,13 +637,20 @@ if __name__ == "__main__":
         best_params['chunk_size'] = args.chunk_size
         best_params['chunk_overlap'] = args.chunk_overlap
     
+    # Log which evaluation set we're using
+    # if args.ragas:
+    #     logger.info("Using Ragas evaluations: answer_accuracy, context_relevance, faithfulness, response_relevancy")
+    # else:
+    #     logger.info("Using original evaluations: correctness, groundedness, relevance, retrieval_relevance")
+    
     try:
         # Run the requested phase
         phase_results = run_experiment_phase(
             args.phase,
             args.max_parallel,
             best_params,
-            args.output_dir
+            args.output_dir,
+            # args.ragas
         )
         
         if phase_results["success"]:
@@ -610,12 +658,16 @@ if __name__ == "__main__":
             print(f"Results saved to: {phase_results['output_dir']}")
             print("\nTo analyze results and determine the best configuration, examine the metrics in the results.json file.")
             
+            # evaluator_type = "ragas" if args.ragas else "standard"
+            
             if args.phase == 1:
                 print("\nAfter analyzing results, run Phase 2 with:")
-                print("python run_experiment_suite.py --phase 2 --embedding_model <best_model_from_phase1>")
+                print(f"python run_experiment_suite.py --phase 2 --embedding_model <best_model_from_phase1>")
+                # print(f"python run_experiment_suite.py --phase 2 --embedding_model <best_model_from_phase1> {'--ragas' if args.ragas else ''}")
             elif args.phase == 2:
                 print("\nAfter analyzing results, run Phase 3 with:")
-                print("python run_experiment_suite.py --phase 3 --embedding_model <best_model> --chunk_size <best_size> --chunk_overlap <best_overlap>")
+                print(f"python run_experiment_suite.py --phase 3 --embedding_model <best_model> --chunk_size <best_size> --chunk_overlap <best_overlap>")
+                # print(f"python run_experiment_suite.py --phase 3 --embedding_model <best_model> --chunk_size <best_size> --chunk_overlap <best_overlap> {'--ragas' if args.ragas else ''}")
             
             sys.exit(0)
         else:
