@@ -184,8 +184,9 @@ def create_phase2_experiments(best_embedding_model: str) -> List[ExperimentConfi
     
     # Define the core parameters to test
     rag_models = ["cohere"] # TODO optionally add Mistral
-    # team_types = ["marketing"] # use for all-mpnet-base-v2
-    team_types = ["engineering"] # use for multi-qa-mpnet-base-dot-v1
+    # TODO running on w267
+    team_types = ["marketing"] # use for all-mpnet-base-v2
+    # team_types = ["engineering"] # use for multi-qa-mpnet-base-dot-v1
     
     # Chunk sizes and overlaps to test
     chunk_sizes = [256, 512, 1024]
