@@ -29,7 +29,7 @@ import itertools
 from tqdm import tqdm
 from datetime import datetime
 from dotenv import load_dotenv
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Any, Optional, Tuple, Union
 
 # Load environment variables from .env file
@@ -529,51 +529,62 @@ def run_experiment_phase(
     with open(f"{output_dir}/experiment_plan.json", "w") as f:
         json.dump([config.to_dict() for config in experiments], f, indent=4)
     
-    # Run experiments in a strategic order to avoid GPU memory issues
-    results = []
-    
-    # Sort experiments so that Mistral experiments are run separately
-    # Group by LLM type
+    # Split experiments by model type
     cohere_experiments = [exp for exp in experiments if exp.rag_type == "cohere"]
     mistral_experiments = [exp for exp in experiments if exp.rag_type == "mistral"]
     
-    # Reorganize the experiments to avoid running multiple Mistral models at once
-    ordered_experiments = cohere_experiments + mistral_experiments
+    logger.info(f"Running {len(experiments)} experiments for Phase {phase}")
+    logger.info(f"Running {len(cohere_experiments)} Cohere experiments with parallelism {max_parallel}")
+    logger.info(f"Running {len(mistral_experiments)} Mistral experiments sequentially")
     
-    logger.info(f"Running {len(ordered_experiments)} experiments for Phase {phase} with max_parallel={max_parallel}")
-    logger.info(f"Running {len(cohere_experiments)} Cohere experiments, then {len(mistral_experiments)} Mistral experiments")
+    results = []
     
-    # Only run one experiment at a time if Mistral is involved - Mistral models can't be parallelized on a single GPU
-    actual_parallel = 1 if phase == 1 or len(mistral_experiments) > 0 else max_parallel
-    logger.info(f"Setting actual parallelism to {actual_parallel} workers due to GPU memory constraints")
-    
-    with ThreadPoolExecutor(max_workers=actual_parallel) as executor:
-        futures = {}
-        
-        # Submit all experiments
-        for config in ordered_experiments:
-            future = executor.submit(run_evaluation, config, cohere_api_key, use_ragas)
-            futures[future] = config
+    # Process Cohere experiments in parallel
+    if cohere_experiments:
+        logger.info(f"Starting Cohere experiments with {max_parallel} workers")
+        with ThreadPoolExecutor(max_workers=max_parallel) as executor:
+            # Submit all Cohere experiments
+            futures = {executor.submit(run_evaluation, config, cohere_api_key, use_ragas): config 
+                      for config in cohere_experiments}
             
-            # If this is a Mistral model, wait for it to complete before submitting another
-            if config.rag_type == "mistral":
-                logger.info(f"Waiting for Mistral experiment to complete before submitting another")
-                future.result()
-                
-                # Save intermediate results immediately after each Mistral experiment
-                if hasattr(future, 'result') and callable(getattr(future, 'result')):
+            # Process results as they complete
+            for future in tqdm(as_completed(futures), 
+                              total=len(futures), 
+                              desc="Cohere experiments"):
+                config = futures[future]
+                try:
                     result = future.result()
                     results.append(result)
-                    
-                    # Save intermediate results after each experiment
-                    with open(f"{output_dir}/results.json", "w") as f:
-                        json.dump(results, f, indent=4)
-        
-        # For any non-Mistral models that are still running, collect their results
-        remaining_futures = [f for f in futures.keys() if not f.done()]
-        for future in tqdm(remaining_futures, desc=f"Running Phase {phase} experiments"):
-            result = future.result()
-            results.append(result)
+                except Exception as e:
+                    logger.error(f"Error in Cohere experiment {config.get_experiment_id()}: {e}", exc_info=True)
+                    results.append({
+                        "experiment_id": config.get_experiment_id(),
+                        "config": config.to_dict(),
+                        "success": False,
+                        "error": str(e),
+                        "evaluation_type": "ragas" if use_ragas else "original"
+                    })
+                
+                # Save intermediate results after each experiment
+                with open(f"{output_dir}/results.json", "w") as f:
+                    json.dump(results, f, indent=4)
+    
+    # Process Mistral experiments sequentially
+    if mistral_experiments:
+        logger.info("Starting Mistral experiments (sequential execution)")
+        for config in tqdm(mistral_experiments, desc="Mistral experiments"):
+            try:
+                result = run_evaluation(config, cohere_api_key, use_ragas)
+                results.append(result)
+            except Exception as e:
+                logger.error(f"Error in Mistral experiment {config.get_experiment_id()}: {e}", exc_info=True)
+                results.append({
+                    "experiment_id": config.get_experiment_id(),
+                    "config": config.to_dict(),
+                    "success": False,
+                    "error": str(e),
+                    "evaluation_type": "ragas" if use_ragas else "original"
+                })
             
             # Save intermediate results after each experiment
             with open(f"{output_dir}/results.json", "w") as f:
