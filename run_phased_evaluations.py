@@ -291,10 +291,10 @@ def create_phase3_experiments(best_embedding_model: str, best_chunk_size: int,
     return experiments
 
 
-def load_validation_data() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+def load_validation_data(path: str = None, limit: int = 78) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """Load validation data and prepare examples for both teams."""
     logger.info("Loading validation data")
-    validation_file = os.path.join("data", "validation_question_answers.json")
+    validation_file = os.path.relpath(path) if path is not None else os.path.join("data", "validation_question_answers.json")
     with open(validation_file, "r") as f:
         validation_question_answers = json.load(f)
 
@@ -302,7 +302,12 @@ def load_validation_data() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     examples_engineering = []
     examples_marketing = []
 
+    counter = 0
     for sample in validation_question_answers.values():
+        
+        if counter == limit:
+            return examples_engineering, examples_marketing
+
         examples_engineering.append({
             "inputs": {"question": sample["question"]},
             "outputs": {"answer": sample["gold_answer_research"]}
@@ -312,6 +317,8 @@ def load_validation_data() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
             "inputs": {"question": sample["question"]},
             "outputs": {"answer": sample["gold_answer_marketing"]}
         })
+
+        counter += 1
     
     return examples_engineering, examples_marketing
 
@@ -387,16 +394,17 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str, use_ragas: boo
     
     # Define team and dataset
     team = Team.Engineering if config.team_type == "engineering" else Team.Marketing
-    dataset_name = f"w267-rag-validation-{config.team_type}"
     
     # Create LangSmith client
     client = Client()
     
     # Load validation data
-    examples_engineering, examples_marketing = load_validation_data()
+    examples_limit = 10
+    examples_engineering, examples_marketing = load_validation_data(limit=examples_limit)
     examples = examples_engineering if config.team_type == "engineering" else examples_marketing
     
     # Get or create dataset
+    dataset_name = f"w267-rag-validation-{config.team_type}" if not examples_limit else f"w267-rag-validation-{config.team_type}-limit{examples_limit}"
     dataset = get_or_create_dataset(client, dataset_name, examples)
     
     # Create target function
