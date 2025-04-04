@@ -1,0 +1,44 @@
+[
+    {
+        "rag_type": "cohere",
+        "team_type": "marketing",
+        "embedding_model": "multi-qa-mpnet-base-dot-v1",
+        "chunk_size": 128,
+        "chunk_overlap": 0,
+        "top_k": 4,
+        "retriever_type": "similarity",
+        "retriever_kwargs": {},
+        "templates": {
+            "engineering": "templates/engineering_template_3.txt",
+            "marketing": "templates/marketing_template_2.txt"
+        }
+    },
+    {
+        "rag_type": "cohere",
+        "team_type": "marketing",
+        "embedding_model": "all-mpnet-base-v2",
+        "chunk_size": 128,
+        "chunk_overlap": 0,
+        "top_k": 4,
+        "retriever_type": "similarity",
+        "retriever_kwargs": {},
+        "templates": {
+            "engineering": "templates/engineering_template_3.txt",
+            "marketing": "templates/marketing_template_2.txt"
+        }
+    },
+    {
+        "rag_type": "cohere",
+        "team_type": "marketing",
+        "embedding_model": "all-MiniLM-L6-v2",
+        "chunk_size": 128,
+        "chunk_overlap": 0,
+        "top_k": 4,
+        "retriever_type": "similarity",
+        "retriever_kwargs": {},
+        "templates": {
+            "engineering": "templates/engineering_template_3.txt",
+            "marketing": "templates/marketing_template_2.txt"
+        }
+    }
+]

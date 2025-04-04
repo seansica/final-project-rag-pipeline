@@ -17,7 +17,7 @@ def ragas_context_relevance(inputs: dict, outputs: dict) -> float:
         logger.warning("No contexts retrieved for evaluation")
         return 0.0
     
-    logger.debug(f'Retrieved contexts: {[]}')
+    logger.debug(f'Number of contexts retrieved: {len(contexts)}');
     
     try:
         # Initialize OpenAI model for evaluation 

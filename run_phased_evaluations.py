@@ -143,14 +143,16 @@ def create_phase1_experiments() -> List[ExperimentConfig]:
     """Create Phase 1 experiments: Embedding Model Comparison"""
     
     # Define the core parameters to test
-    rag_models = ["cohere"] # TODO readd cohere
-    team_types = ["engineering"] # TODO readd engineering
+    rag_models = ["cohere"] # TODO re-add cohere
+    team_types = ["engineering", "marketing"]
     
     # Embedding models to test
     embedding_models = [
-        SupportedEmbeddingModels.MultiQaMpNetBasedDotV1.value,  # Baseline
-        SupportedEmbeddingModels.MpNetBaseV2.value,
-        SupportedEmbeddingModels.MiniLmL6V2.value,
+        # SupportedEmbeddingModels.MultiQaMpNetBasedDotV1.value,  # Baseline
+        # SupportedEmbeddingModels.MpNetBaseV2.value,
+        # SupportedEmbeddingModels.MiniLmL6V2.value,
+        SupportedEmbeddingModels.DistilRobertaV1.value,
+        SupportedEmbeddingModels.MultiQaMpNetBasedCosV1.value
     ]
     
     # Define a focused matrix of experiments
@@ -175,13 +177,18 @@ def create_phase1_experiments() -> List[ExperimentConfig]:
 
 def create_phase2_experiments(best_embedding_model: str) -> List[ExperimentConfig]:
     """Create Phase 2 experiments: Chunk Size and Overlap Optimization"""
+
+    # best performing embedding model from phase 1:
+    # marketing: all-mpnet-base-v2
+    # engineering: multi-qa-mpnet-base-dot-v1
     
     # Define the core parameters to test
-    rag_models = ["cohere", "mistral"]
-    team_types = ["engineering", "marketing"]
+    rag_models = ["cohere"] # TODO optionally add Mistral
+    # team_types = ["marketing"] # use for all-mpnet-base-v2
+    team_types = ["engineering"] # use for multi-qa-mpnet-base-dot-v1
     
     # Chunk sizes and overlaps to test
-    chunk_sizes = [128, 256, 512]
+    chunk_sizes = [256, 512, 1024]
     chunk_overlaps = [0, 50]
     
     # Define a focused matrix of experiments
