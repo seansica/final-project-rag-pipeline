@@ -214,19 +214,14 @@ def create_phase1_experiments() -> List[ExperimentConfig]:
 
 def create_phase2_experiments(best_embedding_model: str) -> List[ExperimentConfig]:
     """Create Phase 2 experiments: Chunk Size and Overlap Optimization"""
-
-    # best performing embedding model from phase 1:
-    # marketing: all-mpnet-base-v2
-    # engineering: multi-qa-mpnet-base-dot-v1
     
     # Define the core parameters to test
     rag_models = ["cohere"] # optionally add mistral: ["cohere", "mistral"]
-    team_types = ["marketing"] # use for all-mpnet-base-v2
-    # team_types = ["engineering"] # use for multi-qa-mpnet-base-dot-v1
+    team_types = ["engineering"]
     
     # Chunk sizes and overlaps to test
-    chunk_sizes = [256, 512, 1024]
-    chunk_overlaps = [0, 50]
+    chunk_sizes = [256, 512, 1024, 2048]
+    chunk_overlaps = [0, 50, 100]
     
     # Define a focused matrix of experiments
     experiments = []
