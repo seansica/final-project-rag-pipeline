@@ -214,19 +214,14 @@ def create_phase1_experiments() -> List[ExperimentConfig]:
 
 def create_phase2_experiments(best_embedding_model: str) -> List[ExperimentConfig]:
     """Create Phase 2 experiments: Chunk Size and Overlap Optimization"""
-
-    # best performing embedding model from phase 1:
-    # marketing: all-mpnet-base-v2
-    # engineering: multi-qa-mpnet-base-dot-v1
     
     # Define the core parameters to test
     rag_models = ["cohere"] # optionally add mistral: ["cohere", "mistral"]
-    team_types = ["marketing"] # use for all-mpnet-base-v2
-    # team_types = ["engineering"] # use for multi-qa-mpnet-base-dot-v1
+    team_types = ["engineering"]
     
     # Chunk sizes and overlaps to test
-    chunk_sizes = [256, 512, 1024]
-    chunk_overlaps = [0, 50]
+    chunk_sizes = [256, 512, 1024, 2048]
+    chunk_overlaps = [0, 50, 100]
     
     # Define a focused matrix of experiments
     experiments = []
@@ -259,8 +254,8 @@ def create_phase3_experiments(best_embedding_model: str, best_chunk_size: int,
     """Create Phase 3 experiments: Retriever Method Optimization"""
     
     # Define the core parameters to test
-    rag_models = ["cohere", "mistral"] # optionally add mistral: ["cohere", "mistral"]
-    team_types = ["engineering", "marketing"]
+    rag_models = ["cohere"] # optionally add mistral: ["cohere", "mistral"]
+    team_types = ["engineering"]
     
     # Define a focused matrix of experiments
     experiments = []
@@ -268,7 +263,7 @@ def create_phase3_experiments(best_embedding_model: str, best_chunk_size: int,
     logger.info("Creating Phase 3 experiments - retriever type comparison")
     
     # Test different top_k values with similarity search
-    for rag_type, team_type, k in itertools.product(rag_models, team_types, [5, 10]):
+    for rag_type, team_type, k in itertools.product(rag_models, team_types, [8, 12]):
         config = ExperimentConfig(
             rag_type=rag_type,
             team_type=team_type, 
@@ -304,7 +299,7 @@ def create_phase3_experiments(best_embedding_model: str, best_chunk_size: int,
             chunk_overlap=best_chunk_overlap,
             top_k=4,  # Baseline
             retriever_type="mmr",
-            retriever_kwargs={"k": 4, "fetch_k": 10}  # Fetch more but return top 4
+            retriever_kwargs={"k": 4, "fetch_k": 8}  # Fetch more but return top 4
         )
         experiments.append(config)
     
