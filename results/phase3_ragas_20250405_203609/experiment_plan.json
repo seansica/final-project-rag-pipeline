@@ -1,0 +1,96 @@
+[
+    {
+        "rag_type": "cohere",
+        "team_type": "marketing",
+        "embedding_model": "all-mpnet-base-v2",
+        "chunk_size": 512,
+        "chunk_overlap": 100,
+        "top_k": 8,
+        "retriever_type": "similarity",
+        "retriever_kwargs": {},
+        "templates": {
+            "engineering": "templates/engineering_template_3.txt",
+            "marketing": "templates/marketing_template_2.txt"
+        }
+    },
+    {
+        "rag_type": "cohere",
+        "team_type": "marketing",
+        "embedding_model": "all-mpnet-base-v2",
+        "chunk_size": 512,
+        "chunk_overlap": 100,
+        "top_k": 12,
+        "retriever_type": "similarity",
+        "retriever_kwargs": {},
+        "templates": {
+            "engineering": "templates/engineering_template_3.txt",
+            "marketing": "templates/marketing_template_2.txt"
+        }
+    },
+    {
+        "rag_type": "cohere",
+        "team_type": "marketing",
+        "embedding_model": "all-mpnet-base-v2",
+        "chunk_size": 512,
+        "chunk_overlap": 100,
+        "top_k": 4,
+        "retriever_type": "similarity_score_threshold",
+        "retriever_kwargs": {
+            "score_threshold": 0.5
+        },
+        "templates": {
+            "engineering": "templates/engineering_template_3.txt",
+            "marketing": "templates/marketing_template_2.txt"
+        }
+    },
+    {
+        "rag_type": "cohere",
+        "team_type": "marketing",
+        "embedding_model": "all-mpnet-base-v2",
+        "chunk_size": 512,
+        "chunk_overlap": 100,
+        "top_k": 4,
+        "retriever_type": "similarity_score_threshold",
+        "retriever_kwargs": {
+            "score_threshold": 0.8
+        },
+        "templates": {
+            "engineering": "templates/engineering_template_3.txt",
+            "marketing": "templates/marketing_template_2.txt"
+        }
+    },
+    {
+        "rag_type": "cohere",
+        "team_type": "marketing",
+        "embedding_model": "all-mpnet-base-v2",
+        "chunk_size": 512,
+        "chunk_overlap": 100,
+        "top_k": 4,
+        "retriever_type": "mmr",
+        "retriever_kwargs": {
+            "k": 4,
+            "fetch_k": 8
+        },
+        "templates": {
+            "engineering": "templates/engineering_template_3.txt",
+            "marketing": "templates/marketing_template_2.txt"
+        }
+    },
+    {
+        "rag_type": "cohere",
+        "team_type": "marketing",
+        "embedding_model": "all-mpnet-base-v2",
+        "chunk_size": 512,
+        "chunk_overlap": 100,
+        "top_k": 4,
+        "retriever_type": "multi_query",
+        "retriever_kwargs": {
+            "llm_for_queries": "cohere",
+            "k": 4
+        },
+        "templates": {
+            "engineering": "templates/engineering_template_3.txt",
+            "marketing": "templates/marketing_template_2.txt"
+        }
+    }
+]
