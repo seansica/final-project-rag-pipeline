@@ -3,9 +3,9 @@ from ragas.llms import LangchainLLMWrapper
 from langchain_openai import ChatOpenAI
 from ragas.dataset_schema import SingleTurnSample
 import asyncio
-import logging
 from langsmith import Client
 from loguru import logger
+import torch
 
 
 def ragas_answer_accuracy(inputs: dict, outputs: dict) -> float:
@@ -18,6 +18,10 @@ def ragas_answer_accuracy(inputs: dict, outputs: dict) -> float:
     logger.info(f"Inputs structure: {inputs.keys()}")
     
     try:
+        # Clear CUDA cache before evaluation to help with memory
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            
         # Approach: Get reference answer directly from the dataset
         client = Client()
         
@@ -75,4 +79,9 @@ def ragas_answer_accuracy(inputs: dict, outputs: dict) -> float:
             
     except Exception as e:
         logger.error(f"Error in ragas_answer_accuracy: {str(e)}", exc_info=True)
+        
+        # Clear CUDA cache on error to free memory
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            
         return 0.0

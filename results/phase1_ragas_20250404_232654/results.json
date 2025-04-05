@@ -1,0 +1,702 @@
+[
+    {
+        "experiment_id": "ragas-rag-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 816.8514194488525,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2916666666666667,
+                    "median": 0.25,
+                    "std": 0.2561473635653349,
+                    "min": 0.0,
+                    "max": 0.75,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.17307692307692307,
+                    "median": 0.0,
+                    "std": 0.3402340969968189,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.20718864468864467,
+                    "median": 0.0,
+                    "std": 0.2818592641419738,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8239064470400831,
+                    "median": 0.8805784447873799,
+                    "std": 0.16548420296944158,
+                    "min": 0.0,
+                    "max": 0.9992450914725964,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 340.96153846153845,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.5782664130301632
+                },
+                "word_count": {
+                    "mean_output": 49.833333333333336,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.5811208078036499
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "ragas-rag-cohere-engineering-emb-all-distilroberta-v1-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "all-distilroberta-v1",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 854.2565131187439,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.28525641025641024,
+                    "median": 0.25,
+                    "std": 0.25394407994201346,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.11858974358974358,
+                    "median": 0.0,
+                    "std": 0.31137618438976383,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.16394993894993898,
+                    "median": 0.0,
+                    "std": 0.23600839467723522,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.82491640245399,
+                    "median": 0.859585730517769,
+                    "std": 0.17827086556019522,
+                    "min": 0.0,
+                    "max": 0.9988676372089816,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 345.53846153846155,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.5760563201977967
+                },
+                "word_count": {
+                    "mean_output": 50.1025641025641,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.575289705017403
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "ragas-rag-cohere-engineering-emb-all-MiniLM-L6-v2-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "all-MiniLM-L6-v2",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 865.8329486846924,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2916666666666667,
+                    "median": 0.25,
+                    "std": 0.2685237016633324,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.11217948717948718,
+                    "median": 0.0,
+                    "std": 0.292346740560959,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.18037749287749286,
+                    "median": 0.0,
+                    "std": 0.24639531697619732,
+                    "min": 0.0,
+                    "max": 0.875,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8124370047340617,
+                    "median": 0.8528611494664222,
+                    "std": 0.18642599893515271,
+                    "min": 0.0,
+                    "max": 0.9999999999998885,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 358.11538461538464,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.60757852956519
+                },
+                "word_count": {
+                    "mean_output": 51.38461538461539,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.598891076415151
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "ragas-rag-cohere-engineering-emb-all-mpnet-base-v2-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "all-mpnet-base-v2",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 864.2136037349701,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.3173076923076923,
+                    "median": 0.5,
+                    "std": 0.2505613079287563,
+                    "min": 0.0,
+                    "max": 0.75,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.15384615384615385,
+                    "median": 0.0,
+                    "std": 0.32541374570553383,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.18096764346764346,
+                    "median": 0.0,
+                    "std": 0.2651587432879921,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.847033088491177,
+                    "median": 0.871887822990115,
+                    "std": 0.1286128745943007,
+                    "min": 0.36141903077994497,
+                    "max": 0.9945507783708659,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 351.05128205128204,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.5982938411554878
+                },
+                "word_count": {
+                    "mean_output": 51.05128205128205,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.6003123948039606
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "ragas-rag-cohere-engineering-emb-multi-qa-mpnet-base-dot-v1-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-dot-v1",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 884.6923449039459,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.30448717948717946,
+                    "median": 0.5,
+                    "std": 0.2781182007703444,
+                    "min": 0.0,
+                    "max": 0.75,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.15705128205128205,
+                    "median": 0.0,
+                    "std": 0.3200775432604319,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.17008130758130754,
+                    "median": 0.0,
+                    "std": 0.2246236486754179,
+                    "min": 0.0,
+                    "max": 0.875,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8304374540476422,
+                    "median": 0.8689260541448396,
+                    "std": 0.13445364684516206,
+                    "min": 0.2298772126952908,
+                    "max": 0.9946489939194124,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 340.6666666666667,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.5704669826781273
+                },
+                "word_count": {
+                    "mean_output": 49.46153846153846,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.5691614339435166
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "ragas-rag-cohere-marketing-emb-multi-qa-mpnet-base-dot-v1-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-dot-v1",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 858.0628621578217,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2467948717948718,
+                    "median": 0.25,
+                    "std": 0.26264634060481457,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.16666666666666666,
+                    "median": 0.0,
+                    "std": 0.32649920612726085,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.167999592999593,
+                    "median": 0.0,
+                    "std": 0.21939607633313607,
+                    "min": 0.0,
+                    "max": 0.8,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7713761582069466,
+                    "median": 0.8125980277498535,
+                    "std": 0.17749904167524713,
+                    "min": 0.0,
+                    "max": 0.9988676372089816,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 356.9230769230769,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.7034651132668297
+                },
+                "word_count": {
+                    "mean_output": 52.43589743589744,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.7414427203811504
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "ragas-rag-cohere-marketing-emb-all-distilroberta-v1-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "all-distilroberta-v1",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 865.9927406311035,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2564102564102564,
+                    "median": 0.25,
+                    "std": 0.24499655104370352,
+                    "min": 0.0,
+                    "max": 0.75,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.11538461538461539,
+                    "median": 0.0,
+                    "std": 0.3033693574390251,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.14437321937321937,
+                    "median": 0.0,
+                    "std": 0.2230169343895994,
+                    "min": 0.0,
+                    "max": 0.8,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8194980638894026,
+                    "median": 0.8505358405677954,
+                    "std": 0.13473417839588844,
+                    "min": 0.30485468849700204,
+                    "max": 0.9999999999998913,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 347.87179487179486,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.6646126195095503
+                },
+                "word_count": {
+                    "mean_output": 50.98717948717949,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.6924921438403204
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "ragas-rag-cohere-marketing-emb-all-mpnet-base-v2-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "all-mpnet-base-v2",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 905.5578954219818,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2532051282051282,
+                    "median": 0.25,
+                    "std": 0.23317956733537062,
+                    "min": 0.0,
+                    "max": 0.75,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.16666666666666666,
+                    "median": 0.0,
+                    "std": 0.3458160560019512,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.1282120657120657,
+                    "median": 0.0,
+                    "std": 0.19735705420050897,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.816334284757874,
+                    "median": 0.8482302393332708,
+                    "std": 0.14930831208200254,
+                    "min": 0.0,
+                    "max": 0.9999999999998264,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 356.2435897435897,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.7016567988152451
+                },
+                "word_count": {
+                    "mean_output": 51.88461538461539,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.7158021861539343
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "ragas-rag-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 893.1157641410828,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.23717948717948717,
+                    "median": 0.25,
+                    "std": 0.24474156757370602,
+                    "min": 0.0,
+                    "max": 0.75,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.1794871794871795,
+                    "median": 0.0,
+                    "std": 0.33199865997185923,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.17364163614163614,
+                    "median": 0.0625,
+                    "std": 0.22250246927495942,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7796017189829734,
+                    "median": 0.8304814174110556,
+                    "std": 0.1909059937442546,
+                    "min": 0.0,
+                    "max": 0.9999999999998913,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 350.55128205128204,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.6444340592467508
+                },
+                "word_count": {
+                    "mean_output": 51.205128205128204,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.6530148456643667
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "ragas-rag-cohere-marketing-emb-all-MiniLM-L6-v2-cs128-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "all-MiniLM-L6-v2",
+            "chunk_size": 128,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 775.6188876628876,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.23076923076923078,
+                    "median": 0.25,
+                    "std": 0.23757852689912118,
+                    "min": 0.0,
+                    "max": 0.75,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.11858974358974358,
+                    "median": 0.0,
+                    "std": 0.30611823689283024,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.14406010656010657,
+                    "median": 0.0,
+                    "std": 0.23897472519842805,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8063651142764143,
+                    "median": 0.8388930590894095,
+                    "std": 0.1677508040306109,
+                    "min": 0.0,
+                    "max": 0.9942356194121803,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 353.1794871794872,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.693008650421208
+                },
+                "word_count": {
+                    "mean_output": 52.02564102564103,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.7322129851467332
+                }
+            }
+        }
+    }
+]

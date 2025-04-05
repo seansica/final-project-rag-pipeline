@@ -2,9 +2,12 @@ from ragas.metrics import ResponseRelevancy
 from ragas.llms import LangchainLLMWrapper
 from langchain_openai import ChatOpenAI
 from ragas.dataset_schema import SingleTurnSample
-from langchain_community.embeddings import HuggingFaceEmbeddings
 import asyncio
 from loguru import logger
+import torch
+
+# Import shared embedding model singleton
+from . import embedding_model
 
 
 def ragas_response_relevancy(inputs: dict, outputs: dict) -> float:
@@ -23,9 +26,8 @@ def ragas_response_relevancy(inputs: dict, outputs: dict) -> float:
         # Wrap the LLM with Ragas LLM Wrapper
         ragas_llm = LangchainLLMWrapper(llm)
         
-        # Initialize embeddings directly instead of using global variable
-        logger.info("Initializing embeddings model")
-        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+        # Get embeddings from shared singleton
+        embeddings = embedding_model.get_embeddings()
         
         # Initialize the Response Relevancy scorer
         scorer = ResponseRelevancy(llm=ragas_llm, embeddings=embeddings)
@@ -38,6 +40,11 @@ def ragas_response_relevancy(inputs: dict, outputs: dict) -> float:
         
         # Run the async evaluation in a synchronous context
         logger.info(f"Evaluating response relevancy for question: {question[:50]}...")
+        
+        # Clear CUDA cache before running to help with memory
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            
         score = asyncio.run(scorer.single_turn_ascore(sample))
         logger.info(f"Response relevancy score: {score}")
         
@@ -45,4 +52,9 @@ def ragas_response_relevancy(inputs: dict, outputs: dict) -> float:
             
     except Exception as e:
         logger.error(f"Error in ragas_response_relevancy: {str(e)}", exc_info=True)
+        
+        # Clear CUDA cache on error to free memory
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            
         return 0.0

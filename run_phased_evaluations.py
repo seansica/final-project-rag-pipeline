@@ -18,14 +18,19 @@ python run_experiment_suite.py --phase 3 --embedding_model "multi-qa-mpnet-base-
 
 To use Ragas metrics instead of custom evaluators, add the --ragas flag:
 python run_experiment_suite.py --phase 1 --max_parallel 2 --ragas
+
+To limit the number of questions used in evaluation (for faster testing):
+python run_experiment_suite.py --phase 1 --max_parallel 2 --limit 10
 """
 import sys
 import os
+import re
 import time
 import json
 import argparse
 import logging
 import itertools
+import numpy as np
 from tqdm import tqdm
 from datetime import datetime
 from dotenv import load_dotenv
@@ -139,18 +144,50 @@ class ExperimentConfig:
         )
 
 
+def create_test_experiments() -> List[ExperimentConfig]:
+    """Create Phase 0 (test) experiments: Embedding Model Comparison"""
+    
+    # Define the core parameters to test
+    rag_models = ["cohere"]
+    team_types = ["engineering"]
+    
+    # Embedding models to test
+    embedding_models = [
+        SupportedEmbeddingModels.MiniLmL6V2.value,
+        SupportedEmbeddingModels.DistilRobertaV1.value
+    ]
+    
+    # Define a focused matrix of experiments
+    experiments = []
+    
+    logger.info("Creating Phase 0 (test) experiments - embedding model comparison")
+    for rag_type, team_type, emb_model in itertools.product(rag_models, team_types, embedding_models):
+        config = ExperimentConfig(
+            rag_type=rag_type,
+            team_type=team_type,
+            embedding_model=emb_model,
+            chunk_size=128,  # Baseline 
+            chunk_overlap=0,  # Baseline
+            top_k=4,          # Baseline
+            retriever_type="similarity"  # Baseline
+        )
+        experiments.append(config)
+    
+    logger.info(f"Created {len(experiments)} experiments for Phase 0 (test)")
+    return experiments
+
 def create_phase1_experiments() -> List[ExperimentConfig]:
     """Create Phase 1 experiments: Embedding Model Comparison"""
     
     # Define the core parameters to test
-    rag_models = ["cohere"] # TODO re-add cohere
+    rag_models = ["cohere"] # optionally add mistral: ["cohere", "mistral"]
     team_types = ["engineering", "marketing"]
     
     # Embedding models to test
     embedding_models = [
-        # SupportedEmbeddingModels.MultiQaMpNetBasedDotV1.value,  # Baseline
-        # SupportedEmbeddingModels.MpNetBaseV2.value,
-        # SupportedEmbeddingModels.MiniLmL6V2.value,
+        SupportedEmbeddingModels.MultiQaMpNetBasedDotV1.value,  # Baseline
+        SupportedEmbeddingModels.MpNetBaseV2.value,
+        SupportedEmbeddingModels.MiniLmL6V2.value,
         SupportedEmbeddingModels.DistilRobertaV1.value,
         SupportedEmbeddingModels.MultiQaMpNetBasedCosV1.value
     ]
@@ -183,8 +220,7 @@ def create_phase2_experiments(best_embedding_model: str) -> List[ExperimentConfi
     # engineering: multi-qa-mpnet-base-dot-v1
     
     # Define the core parameters to test
-    rag_models = ["cohere"] # TODO optionally add Mistral
-    # TODO running on w267
+    rag_models = ["cohere"] # optionally add mistral: ["cohere", "mistral"]
     team_types = ["marketing"] # use for all-mpnet-base-v2
     # team_types = ["engineering"] # use for multi-qa-mpnet-base-dot-v1
     
@@ -223,7 +259,7 @@ def create_phase3_experiments(best_embedding_model: str, best_chunk_size: int,
     """Create Phase 3 experiments: Retriever Method Optimization"""
     
     # Define the core parameters to test
-    rag_models = ["cohere", "mistral"]
+    rag_models = ["cohere", "mistral"] # optionally add mistral: ["cohere", "mistral"]
     team_types = ["engineering", "marketing"]
     
     # Define a focused matrix of experiments
@@ -370,7 +406,7 @@ def create_target_function(rag_system: RAGSystem, team: Team):
     return target
 
 
-def run_evaluation(config: ExperimentConfig, cohere_api_key: str, use_ragas: bool = False) -> Dict[str, Any]:
+def run_evaluation(config: ExperimentConfig, cohere_api_key: str, use_ragas: bool = False, limit: int = 78) -> Dict[str, Any]:
     """Run a single evaluation with given experiment configuration."""
     import gc
     import torch
@@ -399,12 +435,11 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str, use_ragas: boo
     client = Client()
     
     # Load validation data
-    examples_limit = 10
-    examples_engineering, examples_marketing = load_validation_data(limit=examples_limit)
+    examples_engineering, examples_marketing = load_validation_data(limit=limit)
     examples = examples_engineering if config.team_type == "engineering" else examples_marketing
     
     # Get or create dataset
-    dataset_name = f"w267-rag-validation-{config.team_type}" if not examples_limit else f"w267-rag-validation-{config.team_type}-limit{examples_limit}"
+    dataset_name = f"w267-rag-validation-{config.team_type}" if limit == 78 else f"w267-rag-validation-{config.team_type}-limit{limit}"
     dataset = get_or_create_dataset(client, dataset_name, examples)
     
     # Create target function
@@ -449,12 +484,101 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str, use_ragas: boo
         elapsed_time = time.time() - start_time
         logger.info(f"Evaluation completed in {elapsed_time:.1f} seconds: {experiment_id}")
         
+        # Convert result to pandas dataframe to compute summary statistics
+        result_df = result.to_pandas()
+        
+        # Compute summary statistics
+        feedback_metrics = {}
+        
+        # Process feedback metrics
+        feedback_cols = [col for col in result_df.columns if col.startswith('feedback.')]
+        for col in feedback_cols:
+            metric_name = col.replace('feedback.', '')
+            values = result_df[col].dropna()
+            
+            if len(values) == 0:
+                continue
+                
+            feedback_metrics[metric_name] = {
+                'mean': float(values.mean()),
+                'median': float(values.median()),
+                'std': float(values.std()),
+                'min': float(values.min()),
+                'max': float(values.max()),
+                'count': int(len(values))
+            }
+        
+        # Compare output answers with reference answers
+        text_stats = {}
+        if 'outputs.answer' in result_df.columns and 'reference.answer' in result_df.columns:
+            # Character length comparison
+            output_char_lens = result_df['outputs.answer'].fillna('').astype(str).apply(len)
+            reference_char_lens = result_df['reference.answer'].fillna('').astype(str).apply(len)
+            char_ratios = output_char_lens / reference_char_lens.replace(0, float('nan'))
+            
+            # Word count comparison (simple word tokenization)
+            output_word_counts = result_df['outputs.answer'].fillna('').astype(str).apply(
+                lambda x: len(re.findall(r'\b\w+\b', x.lower()))
+            )
+            reference_word_counts = result_df['reference.answer'].fillna('').astype(str).apply(
+                lambda x: len(re.findall(r'\b\w+\b', x.lower()))
+            )
+            word_ratios = output_word_counts / reference_word_counts.replace(0, float('nan'))
+            
+            text_stats = {
+                'character_length': {
+                    'mean_output': float(output_char_lens.mean()),
+                    'mean_reference': float(reference_char_lens.mean()),
+                    'mean_ratio': float(char_ratios.mean())
+                },
+                'word_count': {
+                    'mean_output': float(output_word_counts.mean()),
+                    'mean_reference': float(reference_word_counts.mean()),
+                    'mean_ratio': float(word_ratios.mean())
+                }
+            }
+            
+            # Calculate TF-IDF similarity if there are enough examples
+            if len(result_df) >= 2:
+                try:
+                    from sklearn.feature_extraction.text import TfidfVectorizer
+                    from sklearn.metrics.pairwise import cosine_similarity
+                    
+                    outputs = result_df['outputs.answer'].fillna('').astype(str).tolist()
+                    references = result_df['reference.answer'].fillna('').astype(str).tolist()
+                    
+                    vectorizer = TfidfVectorizer()
+                    all_docs = outputs + references
+                    tfidf_matrix = vectorizer.fit_transform(all_docs)
+                    
+                    n = len(outputs)
+                    similarities = []
+                    for i in range(n):
+                        if i < len(tfidf_matrix) and i + n < len(tfidf_matrix):
+                            output_vector = tfidf_matrix[i]
+                            reference_vector = tfidf_matrix[i + n]
+                            similarity = cosine_similarity(output_vector, reference_vector)[0][0]
+                            similarities.append(similarity)
+                    
+                    if similarities:
+                        text_stats['tfidf_similarity'] = {
+                            'mean': float(np.mean(similarities)),
+                            'min': float(np.min(similarities)),
+                            'max': float(np.max(similarities))
+                        }
+                except Exception as e:
+                    logger.warning(f"Could not compute TF-IDF similarity: {e}")
+        
         result_data = {
             "experiment_id": experiment_id,
             "config": config.to_dict(),
             "success": True,
             "elapsed_time": elapsed_time,
-            "evaluation_type": "ragas" if use_ragas else "original"
+            "evaluation_type": "ragas" if use_ragas else "original",
+            "metrics": {
+                "feedback": feedback_metrics,
+                "text_comparison": text_stats
+            }
         }
     
     except Exception as e:
@@ -465,7 +589,8 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str, use_ragas: boo
             "config": config.to_dict(),
             "success": False,
             "error": str(e),
-            "evaluation_type": "ragas" if use_ragas else "original"
+            "evaluation_type": "ragas" if use_ragas else "original",
+            "metrics": {}  # Empty metrics object on error
         }
     
     # Clean up to prevent memory leaks
@@ -485,6 +610,15 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str, use_ragas: boo
     # Force garbage collection
     gc.collect()
     
+    # Clean up RAGAS embedding model if using RAGAS evaluators
+    if use_ragas:
+        try:
+            from src.rag267.evals.ragas import embedding_model
+            embedding_model.clear_embeddings()
+            logger.info("Cleaned up RAGAS embedding model")
+        except Exception as e:
+            logger.warning(f"Failed to clear RAGAS embedding model: {e}")
+    
     # If using CUDA, clear CUDA cache
     if torch.cuda.is_available():
         logger.info("Clearing CUDA cache")
@@ -498,7 +632,8 @@ def run_experiment_phase(
     max_parallel: int = 2,
     best_params: Optional[Dict[str, Any]] = None,
     output_dir: Optional[str] = None,
-    use_ragas: bool = False
+    use_ragas: bool = False,
+    limit: int = 78
 ) -> Dict[str, Any]:
     """Run experiments for a specific phase"""
     
@@ -517,7 +652,9 @@ def run_experiment_phase(
     os.makedirs(output_dir, exist_ok=True)
     
     # Create experiments based on phase and best parameters from previous phases
-    if phase == 1:
+    if phase == 0:
+        experiments = create_test_experiments()
+    elif phase == 1:
         experiments = create_phase1_experiments()
     elif phase == 2:
         if not best_params or 'embedding_model' not in best_params:
@@ -532,7 +669,7 @@ def run_experiment_phase(
             best_params['chunk_overlap']
         )
     else:
-        raise ValueError(f"Invalid phase: {phase}. Must be 1, 2, or 3.")
+        raise ValueError(f"Invalid phase: {phase}. Must be 0, 1, 2, or 3.")
     
     # Save the experiment plan
     with open(f"{output_dir}/experiment_plan.json", "w") as f:
@@ -553,7 +690,7 @@ def run_experiment_phase(
         logger.info(f"Starting Cohere experiments with {max_parallel} workers")
         with ThreadPoolExecutor(max_workers=max_parallel) as executor:
             # Submit all Cohere experiments
-            futures = {executor.submit(run_evaluation, config, cohere_api_key, use_ragas): config 
+            futures = {executor.submit(run_evaluation, config, cohere_api_key, use_ragas, limit): config 
                       for config in cohere_experiments}
             
             # Process results as they complete
@@ -571,7 +708,8 @@ def run_experiment_phase(
                         "config": config.to_dict(),
                         "success": False,
                         "error": str(e),
-                        "evaluation_type": "ragas" if use_ragas else "original"
+                        "evaluation_type": "ragas" if use_ragas else "original",
+                        "metrics": {}  # Empty metrics object on error
                     })
                 
                 # Save intermediate results after each experiment
@@ -592,7 +730,8 @@ def run_experiment_phase(
                     "config": config.to_dict(),
                     "success": False,
                     "error": str(e),
-                    "evaluation_type": "ragas" if use_ragas else "original"
+                    "evaluation_type": "ragas" if use_ragas else "original",
+                    "metrics": {}  # Empty metrics object on error
                 })
             
             # Save intermediate results after each experiment
@@ -620,8 +759,8 @@ def run_experiment_phase(
 def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Run RAG experiment suite")
-    parser.add_argument("--phase", type=int, required=True, choices=[1, 2, 3],
-                       help="Experiment phase to run (1, 2, or 3)")
+    parser.add_argument("--phase", type=int, required=True, choices=[0, 1, 2, 3],
+                       help="Experiment phase to run (0, 1, 2, or 3)")
     parser.add_argument("--max_parallel", type=int, default=2, 
                        help="Maximum number of parallel experiments (default: 2)")
     parser.add_argument("--output_dir", type=str, default=None,
@@ -640,6 +779,10 @@ def parse_arguments():
     # Evaluation selector
     parser.add_argument("--ragas", action="store_true",
                        help="Use Ragas evaluations (answer_accuracy, context_relevance, faithfulness, response_relevancy)")
+    
+    # Dataset limiting
+    parser.add_argument("--limit", type=int, default=78,
+                       help="Limit the number of questions used in evaluation (default: 78, which uses all questions)")
     
     return parser.parse_args()
 
@@ -668,6 +811,12 @@ if __name__ == "__main__":
         logger.info("Using Ragas evaluations: answer_accuracy, context_relevance, faithfulness, response_relevancy")
     else:
         logger.info("Using standard evaluations: correctness, groundedness, relevance, retrieval_relevance")
+        
+    # Log the question limit
+    if args.limit < 78:
+        logger.info(f"Using subset of validation data: {args.limit} questions (out of 78 total)")
+    else:
+        logger.info("Using full validation dataset: 78 questions")
     
     try:
         # Run the requested phase
@@ -676,7 +825,8 @@ if __name__ == "__main__":
             args.max_parallel,
             best_params,
             args.output_dir,
-            args.ragas
+            args.ragas,
+            args.limit
         )
         
         if phase_results["success"]:
