@@ -36,6 +36,7 @@ dependencies = [
     "ragas>=0.2.14",
     "matplotlib>=3.10.1",
     "seaborn>=0.13.2",
+    "bert-score>=0.3.13",
 ]
 
 [project.scripts]
