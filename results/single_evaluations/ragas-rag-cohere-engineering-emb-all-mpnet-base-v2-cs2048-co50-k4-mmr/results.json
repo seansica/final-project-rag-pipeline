@@ -13,53 +13,53 @@
     }
   },
   "success": true,
-  "elapsed_time": 1029.0445158481598,
+  "elapsed_time": 1341.3743240833282,
   "evaluation_type": "ragas",
   "metrics": {
     "feedback": {
       "ragas_answer_accuracy": {
-        "mean": 0.34615384615384615,
-        "median": 0.25,
-        "std": 0.30745807767965627,
+        "mean": 0.3333333333333333,
+        "median": 0.375,
+        "std": 0.28107708729871417,
         "min": 0.0,
         "max": 1.0,
         "count": 78
       },
       "ragas_context_relevance": {
-        "mean": 0.2916666666666667,
+        "mean": 0.30128205128205127,
         "median": 0.0,
-        "std": 0.4402933398408669,
+        "std": 0.4511150945211526,
         "min": 0.0,
         "max": 1.0,
         "count": 78
       },
       "ragas_faithfulness": {
-        "mean": 0.3317787410696436,
-        "median": 0.2111111111111111,
-        "std": 0.3393858846267006,
+        "mean": 0.3184500949816967,
+        "median": 0.18823529411764706,
+        "std": 0.3172753077953301,
         "min": 0.0,
         "max": 1.0,
         "count": 78
       },
       "ragas_response_relevancy": {
-        "mean": 0.819508634550527,
-        "median": 0.8860636303969995,
-        "std": 0.2234389040319318,
+        "mean": 0.8452613096928447,
+        "median": 0.8810132009783305,
+        "std": 0.15730597188038453,
         "min": 0.0,
-        "max": 0.9953692798586579,
+        "max": 0.9959709630396713,
         "count": 78
       }
     },
     "text_comparison": {
       "character_length": {
-        "mean_output": 758.7307692307693,
+        "mean_output": 752.2307692307693,
         "mean_reference": 612.7307692307693,
-        "mean_ratio": 1.2435723405920807
+        "mean_ratio": 1.2390450781932714
       },
       "word_count": {
-        "mean_output": 108.8974358974359,
+        "mean_output": 107.8076923076923,
         "mean_reference": 89.91025641025641,
-        "mean_ratio": 1.220828154064772
+        "mean_ratio": 1.221516781979125
       }
     }
   }
