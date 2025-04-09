@@ -11,6 +11,8 @@
 # ///
 
 from langsmith import Client, evaluate
+from langsmith.beta._evals import compute_test_metrics
+from langsmith.schemas import Example, Run
 from bert_score import score
 import torch
 from loguru import logger
@@ -18,47 +20,27 @@ from dotenv import load_dotenv
 import sys
 
 
-def bert_score_evaluator(inputs: dict, outputs: dict) -> float:
+load_dotenv()
+client = Client()
+
+
+def bert_score_evaluator(run: Run, example: Example) -> float:
     """Evaluates the similarity between the RAG answer and ground truth using BERTScore."""
+    
     # Extract the necessary information
-    question = inputs["question"]
-    generated_answer = outputs["answer"]
-    
-    # Log the inputs structure
-    logger.info(f"Inputs structure: {inputs.keys()}")
-    
+    question = run.inputs['inputs']['question']
+
+    reference_answer = example.outputs["answer"]
+    generated_answer = run.outputs["answer"]
+
+    if not reference_answer:
+            logger.warning(f"No reference answer found in dataset for question: {question[:50]}...")
+            return 0.0
+        
     try:
         # Clear CUDA cache before evaluation to help with memory
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-            
-        # Get reference answer directly from the dataset
-        client = Client()
-        
-        # Use a fixed dataset name based on the experiment
-        dataset_name = "w267-rag-validation-engineering"  # Default to engineering
-        if "team_type" in inputs:
-            team_type = inputs["team_type"]
-            dataset_name = f"w267-rag-validation-{team_type}"
-            
-        logger.info(f"Searching for reference in dataset: {dataset_name}")
-        
-        # Get dataset examples
-        dataset = client.read_dataset(dataset_name=dataset_name)
-        examples = list(client.list_examples(dataset_id=dataset.id))
-        
-        # Find matching example for this question
-        reference_answer = None
-        for example in examples:
-            example_data = example.dict()
-            if example_data.get("inputs", {}).get("question") == question:
-                reference_answer = example_data.get("outputs", {}).get("answer")
-                logger.info(f"Found reference answer for question")
-                break
-        
-        if not reference_answer:
-            logger.warning(f"No reference answer found in dataset for question: {question[:50]}...")
-            return 0.0
         
         # Log for debugging
         logger.info(f"Question: {question[:50]}...")
@@ -72,6 +54,12 @@ def bert_score_evaluator(inputs: dict, outputs: dict) -> float:
         
         bert_score_value = float(F1[0])
         logger.info(f"BERTScore: {bert_score_value}")
+
+        client.create_feedback(
+            run_id=run.id,
+            key="BERTScore",
+            score=bert_score_value,
+        )
         
         return bert_score_value
             
@@ -98,12 +86,11 @@ def main():
     
     logger.info(f"Evaluating experiment: {args.experiment_name}")
 
-    load_dotenv()
-    
     # Run the evaluation
     result = evaluate(
         args.experiment_name, 
-        evaluators=[bert_score_evaluator]
+        evaluators=[bert_score_evaluator],
+        client=client
     )
     
     # Print evaluation results
