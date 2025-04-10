@@ -1,0 +1,194 @@
+---
+title: "Optimizing Retrieval-Augmented Generation: A Systematic Evaluation of Embedding Models and Retrieval Parameters"
+author: "Sean Sica"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
+    fig_caption: true
+    keep_tex: true
+    citation_package: natbib
+    latex_engine: xelatex
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: paper
+header-includes:
+  - \usepackage{amsmath}
+  - \usepackage{booktabs}
+  - \usepackage{microtype}
+  - \usepackage{hyperref}
+bibliography: references.bib
+abstract: |
+  In this paper, I present a systematic evaluation of Retrieval-Augmented Generation (RAG) systems across various configurations of embedding models, retrieval strategies, and generation parameters. I conducted multi-phased experiments to identify optimal combinations for domain-specific question answering tasks. My results demonstrate that [key finding 1], [key finding 2], and [key finding 3]. I provide a comparative analysis of performance metrics including faithfulness, context relevance, and answer accuracy, offering insights for practitioners implementing RAG systems. My findings contribute to the growing body of knowledge on effectively designing and optimizing RAG pipelines for production applications.
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
+                     fig.width = 7, fig.height = 5, fig.align = "center",
+                     out.width = "80%")
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(knitr)
+library(kableExtra)
+```
+
+# Introduction
+
+Retrieval-Augmented Generation (RAG) has emerged as a powerful approach for enhancing large language model (LLM) responses with relevant external knowledge [@lewis2020retrieval]. By combining the strengths of retrieval systems with generative capabilities, RAG addresses hallucination issues and improves factual accuracy in model outputs. Despite its growing adoption, systematically evaluating the impact of various configuration choices on RAG performance remains challenging.
+
+In this paper, I present a comprehensive experimental framework for evaluating RAG pipelines across multiple dimensions:
+
+- Embedding model selection and configuration
+- Retrieval strategy optimization
+- Context window utilization
+- Prompt engineering effects
+
+My work is motivated by the need to establish empirical guidelines for implementing effective RAG systems in production environments. I aim to answer the following research questions:
+
+1. How do different embedding models affect retrieval quality in domain-specific contexts?
+2. What are the optimal retrieval parameters (chunk size, overlap, top-k) for maximizing response quality?
+3. How do different retrieval strategies (similarity thresholds, reranking methods) impact overall performance?
+
+## Related Work
+
+RAG systems have been explored in several recent studies. [@gao2023retrieval] demonstrated improvements in factual accuracy, while [@izacard2022atlas] extended RAG approaches to longer contexts. [@ram2023incontext] showed how in-context learning can enhance retrieval performance, and [@shi2023replug] explored modular approaches to RAG system design.
+
+My work builds upon these foundations by providing a more systematic evaluation of configuration choices and their interactions, with a focus on practical implementation concerns.
+
+# Methodology
+
+## Experimental Design
+
+I designed a multi-phased experimental approach to evaluate RAG performance:
+
+1. **Phase 1:** Initial exploration of embedding models and basic retrieval configurations
+2. **Phase 2:** Parameter optimization focused on chunk sizes, overlaps, and top-k values
+3. **Phase 3:** Fine-tuning of retrieval strategies with advanced techniques (MMR, similarity thresholds)
+
+Each phase built upon insights from previous phases, allowing for progressive refinement of my understanding.
+
+### Rationale for Phased Approach
+
+This phased experimental design follows a logical dependency chain in the RAG pipeline architecture. The sequential nature of my experiments was deliberate and grounded in both theoretical and practical considerations.
+
+**Embedding Models First (Phase 1):** The embedding model serves as the foundation of any retrieval system, as it determines how documents are represented in the vector space. I prioritized this exploration first because the quality of embeddings fundamentally constrains all downstream retrieval performance. Different embedding models capture semantic relationships differently. By testing various models, I could identify which ones best understood the nuances of the RAG corpus. Furthermore, switching embedding models requires re-embedding the entire corpus, making this the most computationally expensive component to change (though that's more of a principled stance given that the RAG corpus we're working with is small enough to rip and replace each time). By identifying the best-performing embedding models early, I could focus subsequent phases on optimizing parameters within this established foundation, rather than having to repeat experiments across multiple embedding models.
+
+**Chunking Parameters Second (Phase 2):** Once I found the best-performing embedding models, I moved on to optimize chunking and retrieval parameters. Chunk size and overlap directly influence what information is captured in each vector, affecting both retrieval precision and the context provided to the LLM. These parameters interact with the embedding model's capabilities, particularly regarding context window limitations. Small chunks might lose important contextual information, while overly large chunks might dilute the semantic focus of the vector representations. The granularity of chunks determines whether related information is kept together or split across multiple vectors, potentially fragmenting important concepts. While optimizing these parameters is less computationally intensive than changing embedding models, it still requires reprocessing the entire corpus, making it logical to place this optimization after embedding model selection but before retrieval strategy refinement.
+
+**Retrieval Strategies Last (Phase 3):** With optimized representations and chunking in place, I finally experimented with advanced retrieval techniques. These strategies operate on the already-embedded documents and don't require reprocessing the corpus, making them the most flexible component to experiment with. Their effectiveness depends heavily on having high-quality embeddings and appropriate chunking established in the previous phases. Techniques like Maximum Marginal Relevance (MMR) address diversity in retrieved results, while similarity thresholds help filter out marginally relevant documents. Because these techniques can be rapidly tested and compared without rebuilding the vector database, placing this exploration last allowed for efficient fine-tuning after the more foundational components were optimized.
+
+This dependency-based approach follows the natural flow of information in a RAG system from document representation to retrieval optimization. It also optimizes experimental efficiency by addressing the most foundational and computationally expensive components first, progressively moving toward components that can be adjusted with less overhead. This methodology enabled me to build upon insights from each phase, creating a more robust understanding of how different components interact within the RAG pipeline.
+
+## Dataset
+
+My experiments utilized a domain-specific dataset consisting of:
+
+- Engineering documentation
+- Marketing materials
+- Technical specifications
+
+I prepared a set of validation questions with expert-generated ground truth answers to evaluate system performance. The dataset was processed into suitable formats for vector database storage and retrieval.
+
+## Evaluation Metrics
+
+I employed the following metrics to evaluate RAG performance:
+
+- **Faithfulness:** Measures how accurately the generated response adheres to the retrieved context
+- **Context Relevance:** Assesses the relevance of retrieved documents to the query
+- **Answer Accuracy:** Evaluates the correctness of generated answers compared to ground truth
+- **Response Relevancy:** Measures how well the generated response addresses the original query
+
+These metrics were calculated using the RAGAS framework [@deng2023ragas] and supplemented with BERTScore [@zhang2020bertscore] for semantic similarity assessment.
+
+## Implementation Details
+
+My RAG pipeline implementation consisted of:
+
+1. **Vector Database:** Qdrant for storage and retrieval of embedded documents
+2. **Embedding Models:** Multiple models including Cohere embeddings and MPNet-based models
+3. **Retrieval Strategies:** Basic similarity search, MMR, and threshold-based filtering
+4. **LLM Integration:** [Details of LLM used for generation]
+
+```{r methodology-diagram, echo=FALSE, fig.cap="Overview of the experimental RAG pipeline architecture"}
+# Code to include architecture diagram
+```
+
+# Experimental Results
+
+## Phase 1: Initial Model Exploration
+
+In the first phase, I evaluated [number] RAG configurations with varying embedding models while keeping other parameters constant.
+
+```{r phase1-results}
+```
+
+Table \ref{tab:phase1} presents the key metrics for the top-performing configurations from Phase 1.
+
+```{r phase1-table}
+```
+
+## Phase 2: Parameter Optimization
+
+Based on Phase 1 results, I selected the top-performing embedding models and explored variations in chunk size, context window, and retrieval parameters.
+
+```{r phase2-results}
+```
+
+Figure \ref{fig:chunk-size} illustrates the relationship between chunk size and overall performance.
+
+```{r chunk-size-impact, fig.cap="Impact of chunk size on RAG performance metrics"}
+```
+
+## Phase 3: Advanced Retrieval Strategies
+
+In the final phase, I evaluated retrieval techniques including Maximum Marginal Relevance (MMR) and similarity score thresholding.
+
+```{r phase3-results}
+```
+
+# Analysis and Discussion
+
+## Top-Performing Configurations
+
+My experiments revealed several consistently high-performing configurations:
+
+```{r top-performers}
+```
+
+The optimal configuration achieved [X%] improvement over baseline approaches, with particularly strong performance in [specific metrics].
+
+## Parameter Sensitivity Analysis
+
+I identified several key parameters with significant impact on RAG performance:
+
+1. **Chunk Size:** [Findings about optimal chunk size]
+2. **Context Window:** [Findings about context window utilization]
+3. **Top-k Retrieval:** [Findings about optimal k values]
+
+## Embedding Model Comparison
+
+analysis of embedding models:
+
+```{r embedding-comparison}
+```
+
+## Trade-offs and Optimization Strategies
+
+I observed several important trade-offs in RAG system design:
+
+1. **Quality vs. Latency:** [Discussion of performance trade-offs]
+2. **Retrieval Precision vs. Recall:** [Analysis of precision-recall trade-offs]
+3. **Computational Resources:** [Discussion of resource requirements]
+
+# Conclusion
+
+## Limitations
+
+## Future Work
+
+# References
+
+<!-- References generated from the .bib file -->
