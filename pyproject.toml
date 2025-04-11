@@ -41,6 +41,8 @@ dependencies = [
     "gputil>=1.4.0",
     "bitsandbytes>=0.45.5",
     "deepeval>=2.7.1",
+    "scipy>=1.15.2",
+    "numpy>=2.2.3",
 ]
 
 [project.scripts]
