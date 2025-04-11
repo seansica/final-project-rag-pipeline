@@ -15,14 +15,24 @@ import os
 import time
 import argparse
 import numpy as np
+import psutil
+import statistics
 from dotenv import load_dotenv
 from langsmith import Client
 from langchain_openai import ChatOpenAI
 from typing_extensions import Annotated, TypedDict
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 import logging
 import torch
 import gc
+
+# Try to import GPUtil for GPU monitoring
+try:
+    import GPUtil
+    GPUTIL_AVAILABLE = True
+except ImportError:
+    GPUTIL_AVAILABLE = False
+    logging.warning("GPUtil not installed. GPU monitoring will be limited. Install with 'pip install gputil'.")
 
 # Load environment variables from .env file
 load_dotenv()
@@ -202,15 +212,151 @@ def main():
 
     logger.info(f"Experiment ID: {experiment_prefix}")
 
-    # Define target function
+    # Function to measure memory usage
+    def get_memory_usage():
+        process = psutil.Process(os.getpid())
+        memory_info = process.memory_info()
+        return {
+            "rss": memory_info.rss / (1024 * 1024),  # RSS in MB
+            "vms": memory_info.vms / (1024 * 1024),  # VMS in MB
+        }
+    
+    # Function to measure system load including GPU if available
+    def get_system_load():
+        cpu_percent = psutil.cpu_percent(interval=0.1)
+        memory_percent = psutil.virtual_memory().percent
+        
+        # Initialize GPU metrics
+        gpu_metrics = {"available": False}
+        
+        # Try to get GPU metrics using GPUtil if available
+        if GPUTIL_AVAILABLE:
+            try:
+                # Get list of all GPUs
+                gpus = GPUtil.getGPUs()
+                
+                if gpus:
+                    gpu_metrics["available"] = True
+                    gpu_metrics["device_count"] = len(gpus)
+                    gpu_metrics["devices"] = []
+                    
+                    for gpu in gpus:
+                        gpu_metrics["devices"].append({
+                            "id": gpu.id,
+                            "name": gpu.name,
+                            "load_percent": gpu.load * 100,  # Convert to percentage
+                            "memory_used_mb": gpu.memoryUsed,
+                            "memory_total_mb": gpu.memoryTotal,
+                            "memory_percent": gpu.memoryUtil * 100,  # Convert to percentage
+                            "temperature": gpu.temperature
+                        })
+                    
+                    # Log GPU utilization
+                    logger.info(f"GPU Utilization: {GPUtil.showUtilization()}")
+            except Exception as e:
+                logger.warning(f"Error getting GPU metrics with GPUtil: {e}")
+                gpu_metrics["error"] = str(e)
+        
+        # Fallback to PyTorch metrics if GPUtil not available but CUDA is
+        elif torch.cuda.is_available():
+            try:
+                gpu_metrics["available"] = True
+                gpu_metrics["device_count"] = torch.cuda.device_count()
+                gpu_metrics["current_device"] = torch.cuda.current_device()
+                
+                # Get memory stats for each GPU
+                gpu_metrics["devices"] = []
+                for i in range(torch.cuda.device_count()):
+                    # Get memory usage in MB
+                    allocated = torch.cuda.memory_allocated(i) / (1024 * 1024)
+                    reserved = torch.cuda.memory_reserved(i) / (1024 * 1024)
+                    max_memory = torch.cuda.get_device_properties(i).total_memory / (1024 * 1024)
+                    
+                    # Calculate utilization percentage
+                    memory_pct = (allocated / max_memory) * 100 if max_memory > 0 else 0
+                    
+                    gpu_metrics["devices"].append({
+                        "id": i,
+                        "name": torch.cuda.get_device_name(i),
+                        "memory_used_mb": allocated,
+                        "memory_reserved_mb": reserved,
+                        "memory_total_mb": max_memory,
+                        "memory_percent": memory_pct
+                    })
+            except Exception as e:
+                logger.warning(f"Error getting GPU metrics with PyTorch: {e}")
+                gpu_metrics["error"] = str(e)
+        
+        return {
+            "cpu_percent": cpu_percent,
+            "memory_percent": memory_percent,
+            "gpu": gpu_metrics
+        }
+    
+    # Lists to track performance metrics
+    query_times = []
+    response_times = []
+    total_times = []
+    memory_usages = []
+    system_loads = []
+        
+    # Define target function with performance tracking
     def target(inputs: dict) -> dict:
         question = inputs["question"]
         logger.info(f"Processing question: {question[:50]}...")
-        answer = rag_system.invoke(team, question)
+        
+        # Measure memory and system load before processing
+        pre_memory = get_memory_usage()
+        pre_load = get_system_load()
+        
+        # Measure vector store query time
+        query_start = time.time()
         retrieved_docs = rag_system.query_vectorstore(question)
+        query_time = time.time() - query_start
+        query_times.append(query_time)
+        
+        # Measure response generation time
+        response_start = time.time()
+        answer = rag_system.invoke(team, question)
+        response_time = time.time() - response_start
+        response_times.append(response_time)
+        
+        # Measure total time and memory usage after processing
+        total_time = query_time + response_time
+        total_times.append(total_time)
+        
+        # Measure memory and system load after processing
+        post_memory = get_memory_usage()
+        post_load = get_system_load()
+        
+        # Track memory change and system load
+        memory_change = {
+            "rss_change": post_memory["rss"] - pre_memory["rss"],
+            "vms_change": post_memory["vms"] - pre_memory["vms"],
+            "final_rss": post_memory["rss"],
+            "final_vms": post_memory["vms"]
+        }
+        memory_usages.append(memory_change)
+        
+        system_load = {
+            "cpu_percent": post_load["cpu_percent"],
+            "memory_percent": post_load["memory_percent"]
+        }
+        system_loads.append(system_load)
+        
+        logger.info(f"Query time: {query_time:.2f}s, Response time: {response_time:.2f}s, Total: {total_time:.2f}s")
+        logger.info(f"Memory: {post_memory['rss']:.1f}MB, CPU: {post_load['cpu_percent']:.1f}%")
+        
         return {
             "answer": answer,
-            "documents": retrieved_docs
+            "documents": retrieved_docs,
+            "performance": {
+                "query_time": query_time,
+                "response_time": response_time,
+                "total_time": total_time,
+                "memory": post_memory,
+                "system_load": post_load
+            }
         }
 
     # Run evaluation
@@ -343,6 +489,132 @@ def main():
                 except Exception as e:
                     logger.warning(f"Could not compute TF-IDF similarity: {e}")
         
+        # Calculate performance statistics
+        performance_stats = {
+            "query_time": {
+                "mean": statistics.mean(query_times),
+                "median": statistics.median(query_times),
+                "min": min(query_times),
+                "max": max(query_times),
+                "std": statistics.stdev(query_times) if len(query_times) > 1 else 0,
+                "p90": sorted(query_times)[int(len(query_times) * 0.9)] if query_times else 0,
+                "p95": sorted(query_times)[int(len(query_times) * 0.95)] if query_times else 0,
+                "total": sum(query_times)
+            },
+            "response_time": {
+                "mean": statistics.mean(response_times),
+                "median": statistics.median(response_times),
+                "min": min(response_times),
+                "max": max(response_times),
+                "std": statistics.stdev(response_times) if len(response_times) > 1 else 0,
+                "p90": sorted(response_times)[int(len(response_times) * 0.9)] if response_times else 0,
+                "p95": sorted(response_times)[int(len(response_times) * 0.95)] if response_times else 0,
+                "total": sum(response_times)
+            },
+            "total_time": {
+                "mean": statistics.mean(total_times),
+                "median": statistics.median(total_times),
+                "min": min(total_times),
+                "max": max(total_times),
+                "std": statistics.stdev(total_times) if len(total_times) > 1 else 0,
+                "p90": sorted(total_times)[int(len(total_times) * 0.9)] if total_times else 0,
+                "p95": sorted(total_times)[int(len(total_times) * 0.95)] if total_times else 0,
+                "total": sum(total_times)
+            }
+        }
+        
+        # Calculate memory statistics
+        if memory_usages:
+            memory_stats = {
+                "rss_change": {
+                    "mean": statistics.mean([m["rss_change"] for m in memory_usages]),
+                    "max": max([m["rss_change"] for m in memory_usages]),
+                },
+                "final_rss": {
+                    "mean": statistics.mean([m["final_rss"] for m in memory_usages]),
+                    "max": max([m["final_rss"] for m in memory_usages]),
+                }
+            }
+        else:
+            memory_stats = {}
+            
+        # Calculate system load statistics
+        if system_loads:
+            load_stats = {
+                "cpu_percent": {
+                    "mean": statistics.mean([l["cpu_percent"] for l in system_loads]),
+                    "max": max([l["cpu_percent"] for l in system_loads]),
+                },
+                "memory_percent": {
+                    "mean": statistics.mean([l["memory_percent"] for l in system_loads]),
+                    "max": max([l["memory_percent"] for l in system_loads]),
+                }
+            }
+            
+            # Process GPU statistics if available
+            gpu_available = any([l.get("gpu", {}).get("available", False) for l in system_loads])
+            if gpu_available:
+                # Get all loads with GPU data
+                gpu_loads = [l for l in system_loads if l.get("gpu", {}).get("available", False)]
+                if gpu_loads:
+                    # Get device IDs from first reading
+                    if "devices" in gpu_loads[0]["gpu"] and gpu_loads[0]["gpu"]["devices"]:
+                        device_ids = [device["id"] for device in gpu_loads[0]["gpu"]["devices"]]
+                        
+                        # Initialize GPU stats dictionary
+                        gpu_stats = {}
+                        
+                        for device_id in device_ids:
+                            # Extract metrics for this device across all readings
+                            device_metrics = []
+                            for load in gpu_loads:
+                                for device in load["gpu"].get("devices", []):
+                                    if device["id"] == device_id:
+                                        device_metrics.append(device)
+                            
+                            if device_metrics:
+                                # Calculate statistics for this device
+                                device_name = device_metrics[0]["name"]
+                                device_stats = {
+                                    "name": device_name,
+                                    "device_id": device_id,
+                                }
+                                
+                                # Add memory statistics if available
+                                if "memory_used_mb" in device_metrics[0]:
+                                    device_stats["memory"] = {
+                                        "used_mb": {
+                                            "mean": statistics.mean([d["memory_used_mb"] for d in device_metrics]),
+                                            "max": max([d["memory_used_mb"] for d in device_metrics]),
+                                        },
+                                        "total_mb": device_metrics[0]["memory_total_mb"],
+                                        "percent": {
+                                            "mean": statistics.mean([d["memory_percent"] for d in device_metrics]),
+                                            "max": max([d["memory_percent"] for d in device_metrics]),
+                                        }
+                                    }
+                                
+                                # Add GPU utilization if available
+                                if "load_percent" in device_metrics[0]:
+                                    device_stats["utilization"] = {
+                                        "mean": statistics.mean([d["load_percent"] for d in device_metrics]),
+                                        "max": max([d["load_percent"] for d in device_metrics]),
+                                    }
+                                    
+                                # Add temperature if available
+                                if "temperature" in device_metrics[0]:
+                                    device_stats["temperature"] = {
+                                        "mean": statistics.mean([d["temperature"] for d in device_metrics]),
+                                        "max": max([d["temperature"] for d in device_metrics]),
+                                    }
+                                
+                                gpu_stats[f"device_{device_id}"] = device_stats
+                        
+                        # Add GPU stats to load stats
+                        load_stats["gpu"] = gpu_stats
+        else:
+            load_stats = {}
+        
         # Create final result data
         result_data = {
             "experiment_id": experiment_prefix,
@@ -362,6 +634,12 @@ def main():
             "metrics": {
                 "feedback": feedback_metrics,
                 "text_comparison": text_stats
+            },
+            "performance": {
+                "timing": performance_stats,
+                "memory": memory_stats,
+                "system_load": load_stats,
+                "sample_count": len(query_times)
             }
         }
         

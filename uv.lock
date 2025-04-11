@@ -298,6 +298,19 @@ wheels = [
 ]
 
 [[package]]
+name = "bitsandbytes"
+version = "0.45.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "torch" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/b7/cb5ce4d1a382cf53c19ef06c5fc29e85f5e129b4da6527dd207d90a5b8ad/bitsandbytes-0.45.5-py3-none-manylinux_2_24_x86_64.whl", hash = "sha256:a5453f30cc6aab6ccaac364e6bf51a7808d3da5f71763dffeb6d9694c59136e4", size = 76059261 },
+    { url = "https://files.pythonhosted.org/packages/a6/4c/77b535e025ce780d2ada8271c1e481fb7337c1df2588a52fe1c9bd87d2e8/bitsandbytes-0.45.5-py3-none-win_amd64.whl", hash = "sha256:ed1c61b91d989d6a33fd05737d6edbf5086d8ebc89235ee632c7a19144085da2", size = 75430204 },
+]
+
+[[package]]
 name = "bs4"
 version = "0.0.2"
 source = { registry = "https://pypi.org/simple" }
@@ -948,6 +961,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/41/4f/d8be74b88621131df
 wheels = [
     { url = "https://files.pythonhosted.org/packages/16/cb/2f4aa605b16df1e031dd7c322c597613eef933e8dd5b6a4414330b21e791/googleapis_common_protos-1.69.1-py2.py3-none-any.whl", hash = "sha256:4077f27a6900d5946ee5a369fab9c8ded4c0ef1c6e880458ea2f70c14f7b70d5", size = 293229 },
 ]
+
+[[package]]
+name = "gputil"
+version = "1.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ed/0e/5c61eedde9f6c87713e89d794f01e378cfd9565847d4576fa627d758c554/GPUtil-1.4.0.tar.gz", hash = "sha256:099e52c65e512cdfa8c8763fca67f5a5c2afb63469602d5dcb4d296b3661efb9", size = 5545 }
 
 [[package]]
 name = "greenlet"
@@ -3091,11 +3110,13 @@ dependencies = [
     { name = "accelerate" },
     { name = "arxiv" },
     { name = "bert-score" },
+    { name = "bitsandbytes" },
     { name = "bs4" },
     { name = "chromadb" },
     { name = "cohere" },
     { name = "datasets" },
     { name = "einops" },
+    { name = "gputil" },
     { name = "ipykernel" },
     { name = "langchain", extra = ["openai"] },
     { name = "langchain-cohere" },
@@ -3125,11 +3146,13 @@ requires-dist = [
     { name = "accelerate", specifier = ">=1.5.2" },
     { name = "arxiv", specifier = ">=2.1.3" },
     { name = "bert-score", specifier = ">=0.3.13" },
+    { name = "bitsandbytes", specifier = ">=0.45.5" },
     { name = "bs4", specifier = ">=0.0.2" },
     { name = "chromadb", specifier = ">=0.6.3" },
     { name = "cohere", specifier = ">=5.14.0" },
     { name = "datasets", specifier = ">=3.4.0" },
     { name = "einops", specifier = ">=0.8.1" },
+    { name = "gputil", specifier = ">=1.4.0" },
     { name = "ipykernel", specifier = ">=6.29.5" },
     { name = "langchain", extras = ["openai"], specifier = ">=0.3.20" },
     { name = "langchain-cohere", specifier = ">=0.4.3" },
