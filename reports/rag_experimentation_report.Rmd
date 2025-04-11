@@ -149,6 +149,23 @@ In the final phase, I evaluated retrieval techniques including Maximum Marginal 
 ```{r phase3-results}
 ```
 
+## System Performance
+
+It looks like a single run of the RAG system with Cohere only utilizes 1330 MB of memory. This is afforded by the fact that Cohere is an externally hosted LLM, and that QDrant is running in-memory with very few documents loaded.
+
+The RAG system does not compound memory with each successive question input since the corresponding inference latents are not sticky——they are not held in memory between runs.
+
+CPU utilization is consistently at 0% or some epsilon small value because the RAG system runs primarily on the GPU via CUDA or MPS.
+
+Running the RAG system with Mistral consumes substantially more compute resources because the model is run offline (self-hosted). This constraint led me to primarily testing with Cohere, since I did not observe any noticable difference in quality between the two LLM outputs.
+
+Response times:
+Cohere averaged between 2.00s and 5.00s for response times.
+Interestingly, despite there being substantially less network latency, Mistral actually performed worse in terms of response time. The P50 latency was approximately 42.61 seconds on a test evaluation containing 10 questions. Looking at the trace, less than half a seconds (0.35) worth of this response time came from other sub-components of the RAG system (e.g., the vector store retriever consistenly completed in approximately a quarter of a second). I attribute this to the probability that the Mistral LLM was substantially underpowered, resulting in mediocre inference times.
+
+Ultimately, this is an apples-to-oranges comparison because Cohere's command-r model is likely hosted on highly performant, highly optimized hardware that clearly closes the gap with locally hosted models despite the intrinsic network disadvantage. 
+
+
 # Analysis and Discussion
 
 ## Top-Performing Configurations
