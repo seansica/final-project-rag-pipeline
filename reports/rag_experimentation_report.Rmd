@@ -155,7 +155,7 @@ It looks like a single run of the RAG system with Cohere only utilizes 1330 MB o
 
 The RAG system does not compound memory with each successive question input since the corresponding inference latents are not sticky——they are not held in memory between runs.
 
-CPU utilization is consistently at 0% or some epsilon small value because the RAG system runs primarily on the GPU via CUDA or MPS.
+CPU utilization is consistently at 0% or some epsilon small value because the RAG system runs primarily on the GPU via CUDA or MPS. The GPU monitoring logs reveal significant utilization spikes during model inference phases, with peak usage ranging from 38% to 99% depending on the query complexity. However, these spikes are temporary and occur specifically during the response generation phase, not during vector retrieval. The GPU memory usage remains more consistent at around 39%, indicating that while the model heavily utilizes computational resources during inference, memory requirements stay relatively stable throughout the process. Notably, the GPU utilization only applies to Mistral experiments where the LLM was hosted on the GPU; Cohere experiments do not apply here.
 
 Running the RAG system with Mistral consumes substantially more compute resources because the model is run offline (self-hosted). This constraint led me to primarily testing with Cohere, since I did not observe any noticable difference in quality between the two LLM outputs.
 
