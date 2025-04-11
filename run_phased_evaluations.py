@@ -217,7 +217,7 @@ def create_phase2_experiments(best_embedding_model: str) -> List[ExperimentConfi
     
     # Define the core parameters to test
     rag_models = ["cohere"] # optionally add mistral: ["cohere", "mistral"]
-    team_types = ["engineering"]
+    team_types = ["engineering", "marketing"]
     
     # Chunk sizes and overlaps to test
     chunk_sizes = [256, 512, 1024, 2048]
@@ -255,7 +255,7 @@ def create_phase3_experiments(best_embedding_model: str, best_chunk_size: int,
     
     # Define the core parameters to test
     rag_models = ["cohere"] # optionally add mistral: ["cohere", "mistral"]
-    team_types = ["engineering"]
+    team_types = ["engineering", "marketing"]
     
     # Define a focused matrix of experiments
     experiments = []
