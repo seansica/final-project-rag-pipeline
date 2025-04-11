@@ -27,6 +27,7 @@ def run_missing_experiment(
     chunk_overlap: int = 0,
     top_k: int = 4,
     use_ragas: bool = True,
+    use_deepeval: bool = False,
     limit: int = 78
 ) -> Dict[str, Any]:
     """Run a single missing experiment and append its results to the existing results file."""
@@ -47,14 +48,12 @@ def run_missing_experiment(
         embedding_model=embedding_model,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
-        top_k=top_k,
         retriever_type="similarity",
+        top_k=top_k,  # For similarity retriever, top_k will be handled internally
     )
     
-    # Generate experiment ID
+    # Generate experiment ID - no longer modifying based on evaluation type
     experiment_id = config.get_experiment_id()
-    if use_ragas:
-        experiment_id = f"ragas-{experiment_id}"
     
     # Check if the experiment already exists in results
     for result in results:
@@ -68,9 +67,34 @@ def run_missing_experiment(
         logger.error("COHERE_API_KEY_PROD environment variable not set")
         sys.exit(1)
     
+    # Create args object for the run_evaluation function with proper flags
+    class Args:
+        def __init__(self):
+            self.ragas = use_ragas
+            self.deepeval = use_deepeval
+            self.bertscore = args.bertscore if hasattr(args, 'bertscore') else False  # add BERTScore support
+            self.standard = not (use_ragas or use_deepeval or self.bertscore)  # Use standard if no others specified
+            
+    args_obj = Args()
+    
     # Run the evaluation
     logger.info(f"Running missing experiment: {experiment_id}")
-    result = run_evaluation(config, cohere_api_key, use_ragas=use_ragas, limit=limit)
+    
+    # Log which evaluators are being used
+    evaluator_types = []
+    if args_obj.standard:
+        evaluator_types.append("standard")
+    if args_obj.ragas:
+        evaluator_types.append("RAGAS")
+    if args_obj.deepeval:
+        evaluator_types.append("DeepEval")
+    if args_obj.bertscore:
+        evaluator_types.append("BERTScore")
+    
+    logger.info(f"Using evaluators: {', '.join(evaluator_types)}")
+    
+    # Run the evaluation with all selected evaluator types
+    result = run_evaluation(config, cohere_api_key, use_ragas=use_ragas, limit=limit, args=args_obj)
     
     # Add the result to the results list
     results.append(result)
@@ -104,7 +128,13 @@ if __name__ == "__main__":
     parser.add_argument("--limit", type=int, default=78,
                         help="Question limit (default: 78)")
     parser.add_argument("--no_ragas", action="store_true",
-                        help="Use standard evaluations instead of RAGAS")
+                        help="Don't use RAGAS evaluations")
+    parser.add_argument("--standard", action="store_true",
+                        help="Use standard evaluations (will be used by default if no other evaluators are specified)")
+    parser.add_argument("--deepeval", action="store_true",
+                        help="Use DeepEval evaluations (faithfulness, geval) - requires OpenAI API key")
+    parser.add_argument("--bertscore", action="store_true",
+                        help="Use BERTScore evaluation to measure semantic similarity with reference answers")
     
     args = parser.parse_args()
     
@@ -118,5 +148,7 @@ if __name__ == "__main__":
         chunk_overlap=args.chunk_overlap,
         top_k=args.top_k,
         use_ragas=not args.no_ragas,
+        use_deepeval=args.deepeval,
         limit=args.limit
+        # bertscore will be handled directly from args within run_missing_experiment
     )

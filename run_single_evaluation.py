@@ -60,6 +60,23 @@ from src.rag267.evals.ragas.response_relevancy import ragas_response_relevancy
 from src.rag267.evals.ragas.answer_accuracy import ragas_answer_accuracy
 from src.rag267.evals.ragas.context_relevance import ragas_context_relevance
 
+# Try to import DeepEval evaluators
+try:
+    from src.rag267.evals.deepeval.faithfulness_eval import deepeval_faithfulness
+    from src.rag267.evals.deepeval.geval import deepeval_geval
+    DEEPEVAL_AVAILABLE = True
+except ImportError:
+    logger.warning("DeepEval evaluators not available. Skip importing.")
+    DEEPEVAL_AVAILABLE = False
+
+# Try to import BERTScore evaluator
+try:
+    from src.rag267.evals.bertscore import bertscore_evaluator
+    BERTSCORE_AVAILABLE = True
+except ImportError:
+    logger.warning("BERTScore evaluator not available. Skip importing.")
+    BERTSCORE_AVAILABLE = False
+
 def main():
     # Parse command-line arguments using argparse
     parser = argparse.ArgumentParser(description="Run a single RAG evaluation")
@@ -71,7 +88,10 @@ def main():
     parser.add_argument("embedding_model", help="Embedding model name")
     parser.add_argument("chunk_size", type=int, help="Chunk size for text splitting")
     parser.add_argument("chunk_overlap", type=int, help="Chunk overlap for text splitting")
-    parser.add_argument("--ragas", action="store_true", help="Use only Ragas evaluations (answer_accuracy, context_relevance, faithfulness, response_relevancy)")
+    parser.add_argument("--ragas", action="store_true", help="Use Ragas evaluations (answer_accuracy, context_relevance, faithfulness, response_relevancy)")
+    parser.add_argument("--deepeval", action="store_true", help="Use DeepEval evaluations (faithfulness, geval) - requires OpenAI API key") 
+    parser.add_argument("--bertscore", action="store_true", help="Use BERTScore evaluation to measure semantic similarity with reference answers")
+    parser.add_argument("--standard", action="store_true", help="Use standard evaluations (will be used by default if no other evaluators are specified)")
     parser.add_argument("--retriever_type", default="similarity", choices=["similarity", "similarity_score_threshold", "mmr", "multi_query"], 
                        help="Type of retriever to use (default: similarity)")
     parser.add_argument("--retriever_kwargs", type=str, help="JSON string of retriever kwargs (e.g. '{\"score_threshold\": 0.8}')")
@@ -206,9 +226,7 @@ def main():
             retriever_extra += f"-{retriever_kwargs['score_threshold']}"
         experiment_prefix += retriever_extra
     
-    # Modify prefix if using Ragas
-    if use_ragas:
-        experiment_prefix = f"ragas-{experiment_prefix}"
+    # No longer modifying prefix based on evaluation type
 
     logger.info(f"Experiment ID: {experiment_prefix}")
 
@@ -374,17 +392,49 @@ def main():
     start_time = time.time()
     
     try:
-        # Choose which evaluators to use based on the ragas flag
-        if use_ragas:
-            logger.info("Using Ragas evaluations only")
-            evaluators = [
+        # Build list of evaluators based on the flags - can include multiple types
+        evaluators = []
+        
+        # Add standard evaluators - use by default if nothing else is specified or if explicitly requested
+        if args.standard or (not args.ragas and not args.deepeval):
+            logger.info("Adding standard evaluators")
+            evaluators.extend([
+                correctness, 
+                groundedness, 
+                relevance, 
+                retrieval_relevance
+            ])
+        
+        # Add RAGAS evaluators if requested
+        if args.ragas:
+            logger.info("Adding RAGAS evaluators")
+            evaluators.extend([
                 ragas_answer_accuracy, 
                 ragas_context_relevance, 
                 ragas_faithfulness, 
                 ragas_response_relevancy
-            ]
-        else:
-            logger.info("Using original evaluations")
+            ])
+        
+        # Add DeepEval evaluators if requested and available
+        if args.deepeval and DEEPEVAL_AVAILABLE:
+            # Check that OpenAI API key is available (required for DeepEval)
+            if not os.getenv("OPENAI_API_KEY"):
+                logger.error("OPENAI_API_KEY environment variable is required for DeepEval to work")
+            else:
+                logger.info("Adding DeepEval evaluators")
+                evaluators.extend([
+                    deepeval_faithfulness,
+                    deepeval_geval
+                ])
+        
+        # Add BERTScore evaluator if requested and available
+        if args.bertscore and BERTSCORE_AVAILABLE:
+            logger.info("Adding BERTScore evaluator")
+            evaluators.append(bertscore_evaluator)
+            
+        # If no evaluators were added, fall back to standard evaluators
+        if not evaluators:
+            logger.warning("No evaluators selected. Falling back to standard evaluators.")
             evaluators = [
                 correctness, 
                 groundedness, 
