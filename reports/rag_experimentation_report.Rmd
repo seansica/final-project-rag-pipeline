@@ -151,20 +151,16 @@ In the final phase, I evaluated retrieval techniques including Maximum Marginal 
 
 ## System Performance
 
-It looks like a single run of the RAG system with Cohere only utilizes 1330 MB of memory. This is afforded by the fact that Cohere is an externally hosted LLM, and that QDrant is running in-memory with very few documents loaded.
+A single execution of the RAG system with Cohere utilizes approximately 1330 MB of memory. This relatively modest footprint stems from Cohere being an externally hosted LLM, while QDrant runs in-memory with a limited document corpus.
+The RAG system demonstrates efficient memory management, as it does not accumulate memory usage with successive query inputs. This efficiency occurs because inference latents are not retained between executions.
+CPU utilization remains consistently negligible (0% or minimal values) as the RAG system operates primarily on the GPU via CUDA or MPS acceleration.
 
-The RAG system does not compound memory with each successive question input since the corresponding inference latents are not sticky——they are not held in memory between runs.
+GPU monitoring logs reveal significant utilization patterns during model inference, with peak usage ranging from 38% to 99% depending on query complexity. These utilization spikes occur specifically during response generation rather than vector retrieval. GPU memory consumption remains relatively stable at approximately 39% throughout the process, indicating that while the model heavily utilizes computational resources during inference, memory requirements maintain consistency.
+The Mistral implementation consumes substantially more computational resources than Cohere because it operates in a self-hosted environment. This constraint led to primarily testing with Cohere, particularly as no significant quality differences were observed between the two LLM outputs.
 
-CPU utilization is consistently at 0% or some epsilon small value because the RAG system runs primarily on the GPU via CUDA or MPS. The GPU monitoring logs reveal significant utilization spikes during model inference phases, with peak usage ranging from 38% to 99% depending on the query complexity. However, these spikes are temporary and occur specifically during the response generation phase, not during vector retrieval. The GPU memory usage remains more consistent at around 39%, indicating that while the model heavily utilizes computational resources during inference, memory requirements stay relatively stable throughout the process. Notably, the GPU utilization only applies to Mistral experiments where the LLM was hosted on the GPU; Cohere experiments do not apply here.
+Regarding response times, Cohere averaged between 2.00s and 5.00s. Interestingly, despite reduced network latency, Mistral demonstrated inferior performance, with a P50 latency of approximately 42.61 seconds on a 10-question evaluation set. Analysis of the execution trace shows that non-LLM components of the RAG system (e.g., vector store retrieval) consistently completed in approximately 0.25 seconds, contributing less than 0.35 seconds to the total response time. This performance disparity likely stems from the Mistral LLM running on underpowered hardware, resulting in suboptimal inference times.
 
-Running the RAG system with Mistral consumes substantially more compute resources because the model is run offline (self-hosted). This constraint led me to primarily testing with Cohere, since I did not observe any noticable difference in quality between the two LLM outputs.
-
-Response times:
-Cohere averaged between 2.00s and 5.00s for response times.
-Interestingly, despite there being substantially less network latency, Mistral actually performed worse in terms of response time. The P50 latency was approximately 42.61 seconds on a test evaluation containing 10 questions. Looking at the trace, less than half a seconds (0.35) worth of this response time came from other sub-components of the RAG system (e.g., the vector store retriever consistenly completed in approximately a quarter of a second). I attribute this to the probability that the Mistral LLM was substantially underpowered, resulting in mediocre inference times.
-
-Ultimately, this is an apples-to-oranges comparison because Cohere's command-r model is likely hosted on highly performant, highly optimized hardware that clearly closes the gap with locally hosted models despite the intrinsic network disadvantage. 
-
+This comparison necessarily involves different computational paradigms, as Cohere's command-r model operates on highly optimized infrastructure that effectively mitigates the inherent network latency disadvantage compared to locally hosted models.
 
 # Analysis and Discussion
 
