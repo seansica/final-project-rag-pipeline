@@ -1,62 +1,163 @@
 {
   "anova_results": {
     "correctness": {
-      "f_value": 0.5993364745752953,
-      "p_value": 0.7981752670923963,
+      "f_value": 1.5002871666307154,
+      "p_value": 0.14343170498336794,
       "significant": false
     },
     "groundedness": {
-      "f_value": 2.973326645312621,
-      "p_value": 0.0017403701104603828,
-      "significant": true
+      "f_value": 0.8682923670074779,
+      "p_value": 0.5533491198968484,
+      "significant": false
     },
     "relevance": {
-      "f_value": 6.96030150905582,
-      "p_value": 1.0754733980808734e-09,
+      "f_value": 7.2852982381314835,
+      "p_value": 3.214018816000344e-10,
       "significant": true
     },
     "retrieval_relevance": {
-      "f_value": 1.595495758851273,
-      "p_value": 0.11232053500730924,
+      "f_value": 0.79324707162718,
+      "p_value": 0.6226949254653183,
       "significant": false
     },
     "ragas_answer_accuracy": {
-      "f_value": 2.6326652816946763,
-      "p_value": 0.0052755497080906755,
+      "f_value": 2.88028398335543,
+      "p_value": 0.0023644966016647504,
       "significant": true
     },
     "ragas_context_relevance": {
-      "f_value": 1.6121382005091394,
-      "p_value": 0.10753111140115502,
+      "f_value": 1.3075307410349284,
+      "p_value": 0.2288599273497238,
       "significant": false
     },
     "ragas_faithfulness": {
-      "f_value": 1.3169029793327758,
-      "p_value": 0.22393100378264902,
+      "f_value": 0.7116865387531952,
+      "p_value": 0.6985292908008809,
       "significant": false
     },
     "ragas_response_relevancy": {
-      "f_value": 2.726312668688586,
-      "p_value": 0.0039038071828894844,
-      "significant": true
+      "f_value": 1.555101300993065,
+      "p_value": 0.1247245690372669,
+      "significant": false
     },
     "deepeval_faithfulness": {
-      "f_value": 1.7797454100255305,
-      "p_value": 0.0684594180242812,
+      "f_value": 1.6913574989148545,
+      "p_value": 0.08710779448777518,
       "significant": false
     },
     "deepeval_geval": {
-      "f_value": 2.8699551362459186,
-      "p_value": 0.0024459418646557043,
+      "f_value": 3.300017702854086,
+      "p_value": 0.0005826448782448257,
       "significant": true
     },
     "bertscore_evaluator": {
-      "f_value": 1.597306921310498,
-      "p_value": 0.11179044153633053,
+      "f_value": 1.51999981888428,
+      "p_value": 0.1364456213885571,
       "significant": false
     }
   },
   "significant_tests": 25,
   "total_tests": 495,
-  "significant_percentage": 0.050505050505050504
+  "significant_percentage": 0.050505050505050504,
+  "regression_analysis": [
+    {
+      "metric": "correctness",
+      "intercept": 0.3698717948717946,
+      "primary_param_coefficient": 0.007051282051282044,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "embedding_model",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.1657534246575375
+    },
+    {
+      "metric": "groundedness",
+      "intercept": 0.2525641025641025,
+      "primary_param_coefficient": -0.0051282051282051395,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "embedding_model",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.04413793103448416
+    },
+    {
+      "metric": "relevance",
+      "intercept": 0.8647435897435896,
+      "primary_param_coefficient": -0.005769230769230801,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "embedding_model",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.011284480356646531
+    },
+    {
+      "metric": "retrieval_relevance",
+      "intercept": 0.7224358974358972,
+      "primary_param_coefficient": -0.0019230769230769657,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "embedding_model",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.008196721311478083
+    },
+    {
+      "metric": "ragas_answer_accuracy",
+      "intercept": 0.26762820512820507,
+      "primary_param_coefficient": -1.4725594983364768e-17,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "embedding_model",
+      "secondary_param_name": "N/A",
+      "r_squared": 1.2212453270876722e-15
+    },
+    {
+      "metric": "ragas_context_relevance",
+      "intercept": 0.12932692307692303,
+      "primary_param_coefficient": 0.005608974358974359,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "embedding_model",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.06002548020384091
+    },
+    {
+      "metric": "ragas_faithfulness",
+      "intercept": 0.15785360294975673,
+      "primary_param_coefficient": 0.0022713575598190838,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "embedding_model",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.034089757161067546
+    },
+    {
+      "metric": "ragas_response_relevancy",
+      "intercept": 0.8200514698806586,
+      "primary_param_coefficient": -0.002599461846543567,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "embedding_model",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.041399376344357974
+    },
+    {
+      "metric": "deepeval_faithfulness",
+      "intercept": 0.969725274725274,
+      "primary_param_coefficient": 0.001166056166056143,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "embedding_model",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.02756284768998174
+    },
+    {
+      "metric": "deepeval_geval",
+      "intercept": 0.4776773351721694,
+      "primary_param_coefficient": 0.0007108761520600781,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "embedding_model",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.0017138642438715435
+    },
+    {
+      "metric": "bertscore_evaluator",
+      "intercept": 0.8816817954564704,
+      "primary_param_coefficient": -0.00015898339259325716,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "embedding_model",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.01464401142812033
+    }
+  ]
 }
