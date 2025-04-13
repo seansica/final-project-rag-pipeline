@@ -94,14 +94,30 @@ I prepared a set of validation questions with expert-generated ground truth answ
 
 ## Evaluation Metrics
 
-I employed the following metrics to evaluate RAG performance:
+I used 13 metrics to evaluate RAG performance.
 
-- **Faithfulness:** Measures how accurately the generated response adheres to the retrieved context
-- **Context Relevance:** Assesses the relevance of retrieved documents to the query
-- **Answer Accuracy:** Evaluates the correctness of generated answers compared to ground truth
-- **Response Relevancy:** Measures how well the generated response addresses the original query
+- Simple: Groundedness
+- Simple: Retrieval Relevance
+- Simple: Relevance
+- Simple: Correctness
+- RAGAS: Faithfulness
+- RAGAS: Context Relevance
+- RAGAS: Response Relevance
+- RAGAS: Answer Accuracy
+- DeepEval: G-Eval
+- DeepEval: Faithfulness (RAG Hallucination)
+- Heuristic: BERTScore
+- Heuristic: Word count
+- Heuristic: Character count
 
-These metrics were calculated using the RAGAS framework [@deng2023ragas] and supplemented with BERTScore [@zhang2020bertscore] for semantic similarity assessment.
+The four simple evaluations measured the same things as the four RAGAS metrics:
+
+- Simple Groundedness == RAGAS Faithfulness
+- Simple Retrieval Relevance == RAGAS Context Relevance
+- Simple Relevance == RAGAS Response Relevance
+- Simple Correctness == RAGAS Answer Accuracy
+
+{insert diagram}
 
 ## Implementation Details
 
