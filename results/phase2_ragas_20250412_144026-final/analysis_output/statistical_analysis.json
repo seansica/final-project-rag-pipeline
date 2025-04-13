@@ -21,38 +21,38 @@
       "significant": false
     },
     "ragas_answer_accuracy": {
-      "f_value": 1.2149330950654753,
-      "p_value": 0.2199120517516541,
+      "f_value": 0.9731010988592508,
+      "p_value": 0.49783899704705525,
       "significant": false
     },
     "ragas_context_relevance": {
-      "f_value": 1.7109794246604793,
-      "p_value": 0.01905324038196502,
-      "significant": true
+      "f_value": 1.274689630980553,
+      "p_value": 0.17208030678278285,
+      "significant": false
     },
     "ragas_faithfulness": {
-      "f_value": 2.2548957756490604,
-      "p_value": 0.000594585283903816,
+      "f_value": 1.9943978907980107,
+      "p_value": 0.0033840337787327183,
       "significant": true
     },
     "ragas_response_relevancy": {
-      "f_value": 2.08108514970245,
-      "p_value": 0.0019244312107857787,
-      "significant": true
+      "f_value": 1.0342248396794658,
+      "p_value": 0.41666949397819397,
+      "significant": false
     },
     "deepeval_faithfulness": {
-      "f_value": 1.9557132043667558,
-      "p_value": 0.004331619984470774,
+      "f_value": 2.167398781223551,
+      "p_value": 0.0010812829658140798,
       "significant": true
     },
     "deepeval_geval": {
-      "f_value": 2.432133775067984,
-      "p_value": 0.00017042996861317956,
+      "f_value": 2.223177075786158,
+      "p_value": 0.0007396552670298063,
       "significant": true
     },
     "bertscore_evaluator": {
-      "f_value": 2.1884912961511014,
-      "p_value": 0.0009372548239507257,
+      "f_value": 2.532736032771665,
+      "p_value": 8.215022439739043e-05,
       "significant": true
     }
   },
@@ -62,52 +62,66 @@
   "regression_analysis": [
     {
       "metric": "ragas_answer_accuracy",
-      "intercept": 0.28832799145299165,
-      "chunk_size_coefficient": 3.7560096153846266e-06,
-      "chunk_overlap_coefficient": -4.006410256410233e-05,
-      "r_squared": 0.020427627721531394
+      "intercept": 0.2883279914529917,
+      "primary_param_coefficient": 3.7560096153846232e-06,
+      "secondary_param_coefficient": -4.006410256410271e-05,
+      "primary_param_name": "chunk_size",
+      "secondary_param_name": "chunk_overlap",
+      "r_squared": 0.020427627721531727
     },
     {
       "metric": "ragas_context_relevance",
-      "intercept": 0.24917839557785212,
-      "chunk_size_coefficient": 3.0556136194723146e-05,
-      "chunk_overlap_coefficient": 0.00012419871794871844,
-      "r_squared": 0.6956587790859369
+      "intercept": 0.24917839557785218,
+      "primary_param_coefficient": 3.055613619472311e-05,
+      "secondary_param_coefficient": 0.00012419871794871803,
+      "primary_param_name": "chunk_size",
+      "secondary_param_name": "chunk_overlap",
+      "r_squared": 0.695658779085937
     },
     {
       "metric": "ragas_faithfulness",
       "intercept": 0.26823678919118593,
-      "chunk_size_coefficient": 2.4578625067668348e-05,
-      "chunk_overlap_coefficient": 0.00024294068645030272,
+      "primary_param_coefficient": 2.4578625067668328e-05,
+      "secondary_param_coefficient": 0.00024294068645030272,
+      "primary_param_name": "chunk_size",
+      "secondary_param_name": "chunk_overlap",
       "r_squared": 0.28563323064557133
     },
     {
       "metric": "ragas_response_relevancy",
-      "intercept": 0.8004989778342012,
-      "chunk_size_coefficient": -3.88969159607629e-06,
-      "chunk_overlap_coefficient": -4.297093773434726e-06,
+      "intercept": 0.8004989778342013,
+      "primary_param_coefficient": -3.889691596076345e-06,
+      "secondary_param_coefficient": -4.297093773435492e-06,
+      "primary_param_name": "chunk_size",
+      "secondary_param_name": "chunk_overlap",
       "r_squared": 0.02610364719785674
     },
     {
       "metric": "deepeval_faithfulness",
       "intercept": 0.9589703912733805,
-      "chunk_size_coefficient": 7.011045139441852e-06,
-      "chunk_overlap_coefficient": -7.137133699633353e-05,
-      "r_squared": 0.1532952974189682
+      "primary_param_coefficient": 7.011045139441852e-06,
+      "secondary_param_coefficient": -7.137133699633354e-05,
+      "primary_param_name": "chunk_size",
+      "secondary_param_name": "chunk_overlap",
+      "r_squared": 0.15329529741896797
     },
     {
       "metric": "deepeval_geval",
       "intercept": 0.49983070942464775,
-      "chunk_size_coefficient": -5.307798587344184e-06,
-      "chunk_overlap_coefficient": 7.713860227638448e-05,
-      "r_squared": 0.036419417054548875
+      "primary_param_coefficient": -5.307798587344182e-06,
+      "secondary_param_coefficient": 7.713860227638448e-05,
+      "primary_param_name": "chunk_size",
+      "secondary_param_name": "chunk_overlap",
+      "r_squared": 0.036419417054548986
     },
     {
       "metric": "bertscore_evaluator",
       "intercept": 0.8821359547640718,
-      "chunk_size_coefficient": -4.6302092205208526e-07,
-      "chunk_overlap_coefficient": -5.6348941647093635e-06,
-      "r_squared": 0.021476806732846687
+      "primary_param_coefficient": -4.63020922052124e-07,
+      "secondary_param_coefficient": -5.63489416470862e-06,
+      "primary_param_name": "chunk_size",
+      "secondary_param_name": "chunk_overlap",
+      "r_squared": 0.021476806732846798
     }
   ]
 }
