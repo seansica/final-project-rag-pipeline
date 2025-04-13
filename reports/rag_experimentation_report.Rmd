@@ -35,22 +35,25 @@ library(knitr)
 library(kableExtra)
 ```
 
+# Executive Summary
+
+This research systematically evaluated Retrieval-Augmented Generation (RAG) systems across multiple configurations to identify optimal parameters for domain-specific question answering.
+Through a phased experimental approach, I found that embedding model selection has less impact than query template design and retrieval parameters.
+The multi-qa-mpnet-base-cos-v1 embedding model with chunk size of 1024, chunk overlap of 100, and a similarity-based retriever with top-k=8 consistently delivered the best performance.
+Engineering-focused query templates consistently outperformed marketing templates regardless of other parameters.
+Larger chunk sizes and higher overlap improved context relevance, while similarity-based retrieval with appropriate top-k values yielded more faithful and accurate responses than threshold-based approaches.
+These findings offer practical guidelines for RAG system implementation in production environments.
+
 # Introduction
 
-Retrieval-Augmented Generation (RAG) has emerged as a powerful approach for enhancing large language model (LLM) responses with relevant external knowledge [@lewis2020retrieval]. By combining the strengths of retrieval systems with generative capabilities, RAG addresses hallucination issues and improves factual accuracy in model outputs. Despite its growing adoption, systematically evaluating the impact of various configuration choices on RAG performance remains challenging.
-
-In this paper, I present a comprehensive experimental framework for evaluating RAG pipelines across multiple dimensions:
-
-- Embedding model selection and configuration
-- Retrieval strategy optimization
-- Context window utilization
-- Prompt engineering effects
-
-My work is motivated by the need to establish empirical guidelines for implementing effective RAG systems in production environments. I aim to answer the following research questions:
-
-1. How do different embedding models affect retrieval quality in domain-specific contexts?
-2. What are the optimal retrieval parameters (chunk size, overlap, top-k) for maximizing response quality?
-3. How do different retrieval strategies (similarity thresholds, reranking methods) impact overall performance?
+Retrieval-Augmented Generation (RAG) has emerged as a powerful approach for enhancing large language model (LLM) responses with relevant external knowledge.
+By combining the strengths of retrieval systems with generative capabilities, RAG addresses hallucination issues and improves factual accuracy in model outputs.
+However, systematically evaluating the impact of various configuration choices on RAG performance is still very1 challenging.
+This project implemented a RAG system designed to answer domain-specific questions across engineering and marketing contexts.
+The system ingests technical documentation, processes it into retrievable chunks, and leverages state-of-the-art embedding models and retrieval strategies to provide accurate, contextually relevant answers.
+One of the main features of this implementation is its ability to customize responses for different audiences through specialized query templates.
+The inputs consist of domain-specific documentation split into chunks and stored in a vector database. 
+The system can answer factual questions about technical specifications, processes, and concepts contained within the corpus.
 
 ## Related Work
 
