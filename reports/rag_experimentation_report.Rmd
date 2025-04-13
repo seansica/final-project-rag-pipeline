@@ -48,7 +48,7 @@ These findings offer practical guidelines for RAG system implementation in produ
 
 Retrieval-Augmented Generation (RAG) has emerged as a powerful approach for enhancing large language model (LLM) responses with relevant external knowledge.
 By combining the strengths of retrieval systems with generative capabilities, RAG addresses hallucination issues and improves factual accuracy in model outputs.
-However, systematically evaluating the impact of various configuration choices on RAG performance is still very1 challenging.
+However, systematically evaluating the impact of various configuration choices on RAG performance is still very challenging.
 This project implemented a RAG system designed to answer domain-specific questions across engineering and marketing contexts.
 The system ingests technical documentation, processes it into retrievable chunks, and leverages state-of-the-art embedding models and retrieval strategies to provide accurate, contextually relevant answers.
 One of the main features of this implementation is its ability to customize responses for different audiences through specialized query templates.
@@ -63,7 +63,7 @@ The system can answer factual questions about technical specifications, processe
 
 - Retriever Strategy: Similarity-based retrieval with top-k=8 consistently outperformed other strategies, while high similarity thresholds (0.8+) often retrieved nothing and collapsed performance, demonstrating that retriever method selection significantly impacts evaluation metrics ($R^2 \approx 0.4-0.6$).
 
--Embedding Model Performance: While multi-qa-mpnet-base-cos-v1 was technically the best performing embedding model for both engineering and marketing contexts, differences between embedding models were statistically insignificant. This could likely be overcome with a larger evaluation QA corpus, as well as repeated iterations of experiments to increase the draw pool for the random distribution. LangSmith specifically provides an argument for evaluating (and normalizing) metric outcomes against multiple runs, but this drives up the cost linearly.
+- Embedding Model Performance: While multi-qa-mpnet-base-cos-v1 was technically the best performing embedding model for both engineering and marketing contexts, differences between embedding models were statistically insignificant. This could likely be overcome with a larger evaluation QA corpus, as well as repeated iterations of experiments to increase the draw pool for the random distribution. LangSmith specifically provides an argument for evaluating (and normalizing) metric outcomes against multiple runs, but this drives up the cost linearly.
 
 - Evaluation Metric Sensitivity: Different evaluation metrics showed varying sensitivities to parameter changes, with DeepEval faithfulness being extremely sensitive to retriever method changes, making it an effective signal for optimizing RAG systems.
 
@@ -141,8 +141,8 @@ The RAG system successfully demonstrated the ability to answer domain-specific q
 - Chunking Parameter Impact:
   The chunk size and overlap had a substantial impact on performance metrics:
   - Chunk size of 1024 with overlap of 100 consistently produced the best results
-  - Ragas Context Relevance showed a strong correlation to chunk parameters ($R^2 \approx 0.70$)
-  - Ragas Faithfulness (Hallucination for RAG) showed a moderate correlation ($R%2 \approx 0.29$)
+  - Ragas Context Relevance showed a strong correlation ($R^2 \approx 0.70$)
+  - Ragas Faithfulness (Hallucination for RAG) showed a moderate correlation ($R^2 \approx 0.29$)
   - Larger chunks with more overlap improved context relevance by keeping related information together
 
 - Retrieval Strategy Effects:
