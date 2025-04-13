@@ -164,3 +164,27 @@ Analysis complete. Results saved to results/phase2_ragas_20250412_144026-final/a
 ```
 
 General observations:
+
+CS=1014,CO=100 was the overall best performing:
+- ragas_answer_accuracy: 0.3333 (the highest among the runs)
+- deepeval_geval: 0.5394 (the top for that metric)
+- ragas_faithfulness: 0.3616 (one of the higher values across runs)
+- ragas_response_relevancy: 0.8187 (also near the top)
+
+Although the ANOVA found certain metrics to be significantly different among experiments (e.g. ragas_faithfulness, deepeval_faithfulness, deepeval_geval, and bertscore_evaluator), the cs1024-co100 experiment consistently placed near or at the top on enough metrics to remain the best overall—particularly for ragas_answer_accuracy and deepeval_geval.
+
+ragas_faithfulness, deepeval_faithfulness, deepeval_geval, and BERTScore all had p-values below 0.05 in the ANOVA, implying real differences among experiments.
+
+Although the raw R^2 values for most metrics were modest (from ~0.02 to ~0.28), some (like ragas_context_relevance) had a higher R^2 (~0.70). That suggests chunk size and overlap can explain a fair portion of the variance in that metric.
+
+For metrics that did not vary much with chunk parameters, R^2 is near zero, reinforcing that chunk size/overlap are not strongly driving differences in those outcomes.
+
+ragas_context_relevance shows a strong positive relationship to chunk size/overlap (R^2 ~ 0.70)
+
+ragas_faithfulness shows a moderate positive relationship (R^2 ~ 0.29)
+
+For other metrics (e.g., BERTScore, ragas_answer_accuracy), R^2 is small and no strong correlation stands out
+
+In practical terms, bigger chunk sizes and more overlap are likely to improve context relevance and, to a lesser degree, faithfulness
+
+The rest of the metrics appear to depend more on other factors beyond chunk size/overlap.
