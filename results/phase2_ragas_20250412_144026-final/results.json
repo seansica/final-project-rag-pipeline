@@ -1,0 +1,2258 @@
+[
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs256-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 256,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1630.8975477218628,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.3108974358974359,
+                    "median": 0.375,
+                    "std": 0.2767679223654412,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.2467948717948718,
+                    "median": 0.0,
+                    "std": 0.40590925218861545,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.26703435453435453,
+                    "median": 0.16666666666666666,
+                    "std": 0.3263269232358528,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8147573290226396,
+                    "median": 0.8567467195252725,
+                    "std": 0.1601107775670479,
+                    "min": 0.0,
+                    "max": 0.9946489939194124,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9724053724053724,
+                    "median": 1.0,
+                    "std": 0.09636350820978418,
+                    "min": 0.5,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5179988176749349,
+                    "median": 0.543115088793511,
+                    "std": 0.20010521158459355,
+                    "min": 0.07330436052454455,
+                    "max": 0.8777299871492541,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.878748492552684,
+                    "median": 0.8789590895175934,
+                    "std": 0.015282175602437517,
+                    "min": 0.8359639048576355,
+                    "max": 0.9062088131904602,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 343.1794871794872,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.5835700547848267
+                },
+                "word_count": {
+                    "mean_output": 49.717948717948715,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.5772981880991774
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs256-co50-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 256,
+            "chunk_overlap": 50,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1627.1636757850647,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.30128205128205127,
+                    "median": 0.25,
+                    "std": 0.294315666626348,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.27884615384615385,
+                    "median": 0.0,
+                    "std": 0.43391297460489653,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.2991910866910866,
+                    "median": 0.25,
+                    "std": 0.3172298589024308,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7800855922103617,
+                    "median": 0.8322988223566081,
+                    "std": 0.18159606403089787,
+                    "min": 0.2474938481608254,
+                    "max": 0.9946489939194124,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9138888888888889,
+                    "median": 1.0,
+                    "std": 0.2006198307703316,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5094255805806344,
+                    "median": 0.5280812559450707,
+                    "std": 0.21513104649382153,
+                    "min": 0.12608310945281323,
+                    "max": 0.9150801751143061,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8787457912396162,
+                    "median": 0.8776074647903442,
+                    "std": 0.01559983446363141,
+                    "min": 0.8447732925415039,
+                    "max": 0.914963960647583,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 342.02564102564105,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.5741607885082811
+                },
+                "word_count": {
+                    "mean_output": 49.69230769230769,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.5725449423320053
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs256-co100-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 256,
+            "chunk_overlap": 100,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1625.5347082614899,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.28846153846153844,
+                    "median": 0.25,
+                    "std": 0.28795326516135034,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.27564102564102566,
+                    "median": 0.0,
+                    "std": 0.4100794656711894,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.2856587856587856,
+                    "median": 0.2,
+                    "std": 0.2899496901907206,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.786991610896246,
+                    "median": 0.8359214380128894,
+                    "std": 0.18319747926075225,
+                    "min": 0.0,
+                    "max": 0.9881610572012914,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9519230769230768,
+                    "median": 1.0,
+                    "std": 0.11818678106334576,
+                    "min": 0.5,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.505294676193158,
+                    "median": 0.5444195848131563,
+                    "std": 0.22703055837721964,
+                    "min": 0.05687246331057351,
+                    "max": 0.9164980631119727,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8782637042877002,
+                    "median": 0.8786529004573822,
+                    "std": 0.015214820773541622,
+                    "min": 0.8507605791091919,
+                    "max": 0.9151765704154968,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 356.8205128205128,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.6058439706534509
+                },
+                "word_count": {
+                    "mean_output": 51.62820512820513,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.60041456722945
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs512-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 512,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1717.6866009235382,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.3076923076923077,
+                    "median": 0.25,
+                    "std": 0.2931110470693418,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.25,
+                    "median": 0.0,
+                    "std": 0.4187178946793119,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.3203347578347579,
+                    "median": 0.25,
+                    "std": 0.34415513002543957,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8087268264856574,
+                    "median": 0.8543492021869123,
+                    "std": 0.18167272926077815,
+                    "min": 0.0,
+                    "max": 0.9946489939194124,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9423076923076923,
+                    "median": 1.0,
+                    "std": 0.13496545193371973,
+                    "min": 0.4,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5257264731504685,
+                    "median": 0.5752673597696052,
+                    "std": 0.24122740096981068,
+                    "min": 0.06789338995275171,
+                    "max": 0.8933989591227606,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8799776572447556,
+                    "median": 0.8804087936878204,
+                    "std": 0.016321788788617377,
+                    "min": 0.8379271030426025,
+                    "max": 0.9158244132995605,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 341.64102564102564,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.5763195979074249
+                },
+                "word_count": {
+                    "mean_output": 49.91025641025641,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.5782755269941029
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs512-co100-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 512,
+            "chunk_overlap": 100,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1646.825907945633,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.30128205128205127,
+                    "median": 0.25,
+                    "std": 0.2830692585361489,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.2692307692307692,
+                    "median": 0.0,
+                    "std": 0.4316406912163012,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.36436202686202684,
+                    "median": 0.3333333333333333,
+                    "std": 0.36195990468970834,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7832536757089965,
+                    "median": 0.8698618282170667,
+                    "std": 0.19261869952036992,
+                    "min": 0.0,
+                    "max": 0.9999999999998885,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9643162393162393,
+                    "median": 1.0,
+                    "std": 0.11093607869766066,
+                    "min": 0.5,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5276535011201473,
+                    "median": 0.5387245497311742,
+                    "std": 0.23183674823857908,
+                    "min": 0.08490447904648361,
+                    "max": 0.9007490441295566,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8794008057851058,
+                    "median": 0.8782289326190948,
+                    "std": 0.01618185189509075,
+                    "min": 0.8434082269668579,
+                    "max": 0.9157490134239197,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 350.4102564102564,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.6088457405401196
+                },
+                "word_count": {
+                    "mean_output": 50.166666666666664,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.6015778146521389
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs512-co50-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 512,
+            "chunk_overlap": 50,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 2333.8912892341614,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.3173076923076923,
+                    "median": 0.5,
+                    "std": 0.2752598445432643,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.27884615384615385,
+                    "median": 0.0,
+                    "std": 0.43391297460489653,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.3267593517593518,
+                    "median": 0.2,
+                    "std": 0.3581297058489168,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8180361128815843,
+                    "median": 0.8547670434760942,
+                    "std": 0.13500818081427343,
+                    "min": 0.38449011080191803,
+                    "max": 0.9946489939194124,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9615384615384616,
+                    "median": 1.0,
+                    "std": 0.12353930654637928,
+                    "min": 0.3333333333333333,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5284917013763107,
+                    "median": 0.5880186294963037,
+                    "std": 0.24342198602531068,
+                    "min": 0.08070931812682168,
+                    "max": 0.9119252468655592,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8793585224029346,
+                    "median": 0.8798264265060425,
+                    "std": 0.01670086392067936,
+                    "min": 0.8363646864891052,
+                    "max": 0.9198146462440491,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 350.0769230769231,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.5952347038714705
+                },
+                "word_count": {
+                    "mean_output": 50.69230769230769,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.5905983607473998
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 1024,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1855.5902452468872,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2980769230769231,
+                    "median": 0.375,
+                    "std": 0.2734391724295936,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.25961538461538464,
+                    "median": 0.0,
+                    "std": 0.41176352533851374,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.3412365412365412,
+                    "median": 0.25,
+                    "std": 0.35448662275980364,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8041913179421617,
+                    "median": 0.8505109182113426,
+                    "std": 0.18724029321618024,
+                    "min": 0.0,
+                    "max": 0.9917453877056862,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.963980463980464,
+                    "median": 1.0,
+                    "std": 0.10843164884713405,
+                    "min": 0.5,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5176665429069828,
+                    "median": 0.4902036196199958,
+                    "std": 0.23755327144004523,
+                    "min": 0.034253509311743084,
+                    "max": 0.9012673506695552,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8796680355683352,
+                    "median": 0.880205899477005,
+                    "std": 0.01754653969086378,
+                    "min": 0.8233288526535034,
+                    "max": 0.9239568114280701,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 373.05128205128204,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.6203490960959068
+                },
+                "word_count": {
+                    "mean_output": 53.294871794871796,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.6106562894099651
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co50-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 1024,
+            "chunk_overlap": 50,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1858.8847563266754,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2980769230769231,
+                    "median": 0.375,
+                    "std": 0.2793129683092682,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.28205128205128205,
+                    "median": 0.0,
+                    "std": 0.4232660855232546,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.3401866651866652,
+                    "median": 0.25,
+                    "std": 0.3633575874400698,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8311475420121593,
+                    "median": 0.8888709899770688,
+                    "std": 0.16526195525754553,
+                    "min": 0.0,
+                    "max": 0.9941541016515457,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9638583638583638,
+                    "median": 1.0,
+                    "std": 0.12845727976943355,
+                    "min": 0.25,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5363146376111675,
+                    "median": 0.5618145516603459,
+                    "std": 0.23732402946021477,
+                    "min": 0.07713193782715383,
+                    "max": 0.9229450888237108,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8801407760534531,
+                    "median": 0.8824421167373657,
+                    "std": 0.017776172128899544,
+                    "min": 0.8035516142845154,
+                    "max": 0.9147814512252808,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 394.38461538461536,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.6709735115303856
+                },
+                "word_count": {
+                    "mean_output": 56.52564102564103,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.6635758874025527
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 1024,
+            "chunk_overlap": 100,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1692.978077173233,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.3333333333333333,
+                    "median": 0.5,
+                    "std": 0.26927833650485605,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.2980769230769231,
+                    "median": 0.0,
+                    "std": 0.435922838675288,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.36158933658933656,
+                    "median": 0.25,
+                    "std": 0.36128307140314114,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8187031938579312,
+                    "median": 0.854103748123344,
+                    "std": 0.1668565996873917,
+                    "min": 0.0,
+                    "max": 0.9941541016515457,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9737891737891738,
+                    "median": 1.0,
+                    "std": 0.08243088765320729,
+                    "min": 0.6666666666666666,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5393954786511862,
+                    "median": 0.5486929926069566,
+                    "std": 0.2515148942313478,
+                    "min": 0.05418039834901017,
+                    "max": 0.916481897449675,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8770919083020626,
+                    "median": 0.8781751990318298,
+                    "std": 0.017406832080561586,
+                    "min": 0.8103330135345459,
+                    "max": 0.9174872636795044,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 368.7564102564103,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.6314912511539281
+                },
+                "word_count": {
+                    "mean_output": 53.41025641025641,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.6279096627814718
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs2048-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 2048,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1818.066243171692,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.3141025641025641,
+                    "median": 0.375,
+                    "std": 0.27750013875010404,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.33653846153846156,
+                    "median": 0.0,
+                    "std": 0.44835001089297666,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.3501373626373626,
+                    "median": 0.25,
+                    "std": 0.3644285033995308,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7824134990406153,
+                    "median": 0.8505575247083879,
+                    "std": 0.19826870548596906,
+                    "min": 0.0,
+                    "max": 0.9846017040821721,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9852564102564102,
+                    "median": 1.0,
+                    "std": 0.0586020877119978,
+                    "min": 0.6666666666666666,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5179482135983082,
+                    "median": 0.50572171786898,
+                    "std": 0.2665665779497267,
+                    "min": 0.01456479870683933,
+                    "max": 0.9426053538837955,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8788425960601904,
+                    "median": 0.8784078359603882,
+                    "std": 0.014703925809938836,
+                    "min": 0.8340599536895752,
+                    "max": 0.9202998280525208,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 386.8333333333333,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.6487849065512596
+                },
+                "word_count": {
+                    "mean_output": 55.64102564102564,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.6396783417426354
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs2048-co50-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 2048,
+            "chunk_overlap": 50,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1938.8334095478058,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2980769230769231,
+                    "median": 0.25,
+                    "std": 0.3016666160726892,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.3301282051282051,
+                    "median": 0.0,
+                    "std": 0.4459296246082224,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.3442867317867318,
+                    "median": 0.25,
+                    "std": 0.3477004442423865,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.794519668410665,
+                    "median": 0.8497269663328226,
+                    "std": 0.18578388738526974,
+                    "min": 0.0,
+                    "max": 0.9942356194121803,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9745726495726496,
+                    "median": 1.0,
+                    "std": 0.07788345341490911,
+                    "min": 0.6666666666666666,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5138337829842601,
+                    "median": 0.5422028153317289,
+                    "std": 0.2747155592057523,
+                    "min": 0.008509904848750825,
+                    "max": 0.9108552616448797,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8782549080176231,
+                    "median": 0.8779089450836182,
+                    "std": 0.015050699646525471,
+                    "min": 0.8321517705917358,
+                    "max": 0.9202998280525208,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 387.3974358974359,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.6613693278025995
+                },
+                "word_count": {
+                    "mean_output": 56.42307692307692,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.6599925493404529
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs2048-co100-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "engineering",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 2048,
+            "chunk_overlap": 100,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1883.760852098465,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.3173076923076923,
+                    "median": 0.25,
+                    "std": 0.30331789965603456,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.2948717948717949,
+                    "median": 0.0,
+                    "std": 0.4445623664185911,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.3420121545121545,
+                    "median": 0.2222222222222222,
+                    "std": 0.37449111910122795,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8085232103405459,
+                    "median": 0.8528611494664222,
+                    "std": 0.15903102431783264,
+                    "min": 0.21697704886708657,
+                    "max": 0.9905994623996482,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9658119658119659,
+                    "median": 1.0,
+                    "std": 0.10690103567239857,
+                    "min": 0.5,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5176845452007988,
+                    "median": 0.5421894167305008,
+                    "std": 0.27066563615802436,
+                    "min": 0.008509904094645105,
+                    "max": 0.9348811802462004,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8789391280748905,
+                    "median": 0.8780244886875153,
+                    "std": 0.015699256857451077,
+                    "min": 0.8408277034759521,
+                    "max": 0.9149053692817688,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 380.6923076923077,
+                    "mean_reference": 612.7307692307693,
+                    "mean_ratio": 0.6563892131091814
+                },
+                "word_count": {
+                    "mean_output": 55.06410256410256,
+                    "mean_reference": 89.91025641025641,
+                    "mean_ratio": 0.6517015565609744
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs256-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 256,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1539.3417468070984,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2564102564102564,
+                    "median": 0.125,
+                    "std": 0.28196423444087637,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.2467948717948718,
+                    "median": 0.0,
+                    "std": 0.403904622886325,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.25075138536677,
+                    "median": 0.18333333333333335,
+                    "std": 0.2808685986875439,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7773876355773708,
+                    "median": 0.8249303195216814,
+                    "std": 0.17240227955096238,
+                    "min": 0.0,
+                    "max": 0.9999999999998264,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9694444444444446,
+                    "median": 1.0,
+                    "std": 0.08337300642928862,
+                    "min": 0.6,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.47226086817760643,
+                    "median": 0.4230368057969005,
+                    "std": 0.21542709018654974,
+                    "min": 0.10639712057059447,
+                    "max": 0.894654772083413,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8845851979194543,
+                    "median": 0.8834008872509003,
+                    "std": 0.01755595548276245,
+                    "min": 0.8369700312614441,
+                    "max": 0.9244909286499023,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 360.34615384615387,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.728608405793284
+                },
+                "word_count": {
+                    "mean_output": 52.67948717948718,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.730629252377251
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs256-co50-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 256,
+            "chunk_overlap": 50,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1531.006519794464,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2532051282051282,
+                    "median": 0.25,
+                    "std": 0.28057683434909586,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.266025641025641,
+                    "median": 0.0,
+                    "std": 0.42322920548204185,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.23737281237281233,
+                    "median": 0.13392857142857142,
+                    "std": 0.2807825363249037,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8075495775971697,
+                    "median": 0.836104913746029,
+                    "std": 0.13739502279974383,
+                    "min": 0.2919449341703296,
+                    "max": 0.9942356194121803,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9745726495726496,
+                    "median": 1.0,
+                    "std": 0.08768813454059184,
+                    "min": 0.5,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.4800692890310906,
+                    "median": 0.4691792058527775,
+                    "std": 0.21251484979436178,
+                    "min": 0.0536369475389253,
+                    "max": 0.8974859053158253,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.883242401557091,
+                    "median": 0.8849571049213409,
+                    "std": 0.016836864911313934,
+                    "min": 0.8394194841384888,
+                    "max": 0.9164586067199707,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 353.0128205128205,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.7110662468514737
+                },
+                "word_count": {
+                    "mean_output": 52.15384615384615,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.7401595737165978
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs256-co100-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 256,
+            "chunk_overlap": 100,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1605.5662951469421,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2724358974358974,
+                    "median": 0.25,
+                    "std": 0.2708389366463574,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.28205128205128205,
+                    "median": 0.0,
+                    "std": 0.42134404295160327,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.2576210826210826,
+                    "median": 0.14285714285714285,
+                    "std": 0.3122809779401258,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8038062367253275,
+                    "median": 0.8523778312141517,
+                    "std": 0.15964449003667824,
+                    "min": 0.25275030165778223,
+                    "max": 0.9942356194121803,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9467236467236466,
+                    "median": 1.0,
+                    "std": 0.15150476031510313,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.48875717021191706,
+                    "median": 0.44530022666144176,
+                    "std": 0.2230315838475325,
+                    "min": 0.1458988464356343,
+                    "max": 0.8819473105153104,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8837132706091955,
+                    "median": 0.8850454390048981,
+                    "std": 0.018180915085875948,
+                    "min": 0.8354491591453552,
+                    "max": 0.9176753163337708,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 361.94871794871796,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.7292217410692068
+                },
+                "word_count": {
+                    "mean_output": 52.82051282051282,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.7357765075871323
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs512-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 512,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1680.5938901901245,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2980769230769231,
+                    "median": 0.25,
+                    "std": 0.2907047312295428,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.2692307692307692,
+                    "median": 0.0,
+                    "std": 0.43909815851036404,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.26443001443001446,
+                    "median": 0.16666666666666666,
+                    "std": 0.2902529225474149,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8002751209262498,
+                    "median": 0.8392976894872803,
+                    "std": 0.1408596093531881,
+                    "min": 0.4861571603920632,
+                    "max": 0.9942356194121803,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9564102564102566,
+                    "median": 1.0,
+                    "std": 0.11481935021364294,
+                    "min": 0.5,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.47827231271878134,
+                    "median": 0.40525057157102196,
+                    "std": 0.2386842710342782,
+                    "min": 0.09725404146949725,
+                    "max": 0.9223365500805386,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8854879240194956,
+                    "median": 0.887150764465332,
+                    "std": 0.019379516409897504,
+                    "min": 0.8485896587371826,
+                    "max": 0.9348338842391968,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 375.2692307692308,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.8064142029283414
+                },
+                "word_count": {
+                    "mean_output": 54.98717948717949,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.83553555778493
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs512-co50-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 512,
+            "chunk_overlap": 50,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1665.9764568805695,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2948717948717949,
+                    "median": 0.25,
+                    "std": 0.26341781334781517,
+                    "min": 0.0,
+                    "max": 0.75,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.28205128205128205,
+                    "median": 0.0,
+                    "std": 0.4346198786231928,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.2762464387464387,
+                    "median": 0.17142857142857143,
+                    "std": 0.31457838656372494,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.8155076722094167,
+                    "median": 0.8698114193010824,
+                    "std": 0.15864368822875818,
+                    "min": 0.0,
+                    "max": 0.9999999999998913,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9805555555555555,
+                    "median": 1.0,
+                    "std": 0.06443318556175381,
+                    "min": 0.6666666666666666,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.48595277498957656,
+                    "median": 0.4438497718747894,
+                    "std": 0.23470506904449764,
+                    "min": 0.038762678440694386,
+                    "max": 0.9207528891813951,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8863060130522802,
+                    "median": 0.8834587335586548,
+                    "std": 0.020185879283647973,
+                    "min": 0.8485896587371826,
+                    "max": 0.9398829340934753,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 368.38461538461536,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.7821232105673561
+                },
+                "word_count": {
+                    "mean_output": 53.57692307692308,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.7795103979909364
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs512-co100-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 512,
+            "chunk_overlap": 100,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1702.008552789688,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2564102564102564,
+                    "median": 0.25,
+                    "std": 0.2731916902720499,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.28846153846153844,
+                    "median": 0.0,
+                    "std": 0.4378165331315352,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.3079670329670329,
+                    "median": 0.25,
+                    "std": 0.3262374616960392,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.77402602552029,
+                    "median": 0.8210560516398357,
+                    "std": 0.19089707262940542,
+                    "min": 0.0,
+                    "max": 0.9832576120852968,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9558913308913309,
+                    "median": 1.0,
+                    "std": 0.14843160390241386,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.4753214786666166,
+                    "median": 0.38636594890435294,
+                    "std": 0.24347434159663803,
+                    "min": 0.07751068316163758,
+                    "max": 0.925974059882886,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8833496578228779,
+                    "median": 0.8823787868022919,
+                    "std": 0.01831745811532394,
+                    "min": 0.8447734713554382,
+                    "max": 0.9341626167297363,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 360.61538461538464,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.7035177764004057
+                },
+                "word_count": {
+                    "mean_output": 53.05128205128205,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.7288547218897878
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 1024,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1765.0993566513062,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.27564102564102566,
+                    "median": 0.25,
+                    "std": 0.2690463666098232,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.266025641025641,
+                    "median": 0.0,
+                    "std": 0.41352881067233666,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.26242044992044994,
+                    "median": 0.16666666666666666,
+                    "std": 0.3082410014703685,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7858349592430346,
+                    "median": 0.847217439619211,
+                    "std": 0.18198669182862678,
+                    "min": 0.0,
+                    "max": 0.9887869764140848,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9736111111111111,
+                    "median": 1.0,
+                    "std": 0.12444260041666116,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.4718261169151622,
+                    "median": 0.4204256553472885,
+                    "std": 0.24651068354051467,
+                    "min": 0.05117126735395766,
+                    "max": 0.9430945889286798,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8842795995565561,
+                    "median": 0.8826976418495178,
+                    "std": 0.019452698442768153,
+                    "min": 0.8446688652038574,
+                    "max": 0.9294852614402771,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 376.47435897435895,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.7959238270786813
+                },
+                "word_count": {
+                    "mean_output": 55.166666666666664,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.839191947226978
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co50-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 1024,
+            "chunk_overlap": 50,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1826.4095525741577,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.266025641025641,
+                    "median": 0.25,
+                    "std": 0.29426262562631506,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.2724358974358974,
+                    "median": 0.0,
+                    "std": 0.41322672591003473,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.29601061331830564,
+                    "median": 0.1625,
+                    "std": 0.336756576580254,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7792322267289595,
+                    "median": 0.8506232353740395,
+                    "std": 0.1970572746863041,
+                    "min": 0.0,
+                    "max": 0.9761019304094699,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9527777777777777,
+                    "median": 1.0,
+                    "std": 0.10879162690951028,
+                    "min": 0.5,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.47117167444182,
+                    "median": 0.42950755565789545,
+                    "std": 0.2412748245882069,
+                    "min": 0.04678370619711975,
+                    "max": 0.9426053536364746,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.881738856052741,
+                    "median": 0.8827455639839172,
+                    "std": 0.020913303219562075,
+                    "min": 0.8292953968048096,
+                    "max": 0.9322507381439209,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 389.14102564102564,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.8660453719478964
+                },
+                "word_count": {
+                    "mean_output": 56.30769230769231,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.882565808562021
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 1024,
+            "chunk_overlap": 100,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1742.5342166423798,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2724358974358974,
+                    "median": 0.25,
+                    "std": 0.2708389366463574,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.2948717948717949,
+                    "median": 0.0,
+                    "std": 0.43159247128751127,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.29267954267954277,
+                    "median": 0.18333333333333335,
+                    "std": 0.33035460966849045,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7876088262262392,
+                    "median": 0.8315560989135573,
+                    "std": 0.18821011288321302,
+                    "min": 0.0,
+                    "max": 0.9968552171148826,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9617521367521369,
+                    "median": 1.0,
+                    "std": 0.11693256570872342,
+                    "min": 0.25,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.5000349783864768,
+                    "median": 0.5209734822019737,
+                    "std": 0.2528162484359011,
+                    "min": 0.004742587014823578,
+                    "max": 0.9798186775339273,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8845463074170626,
+                    "median": 0.8828773498535156,
+                    "std": 0.020285896955000344,
+                    "min": 0.8457772135734558,
+                    "max": 0.9599267840385437,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 367.9871794871795,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.7753366773104062
+                },
+                "word_count": {
+                    "mean_output": 54.166666666666664,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.8199122609200906
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs2048-co0-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 2048,
+            "chunk_overlap": 0,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1878.9696571826935,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.28205128205128205,
+                    "median": 0.25,
+                    "std": 0.2887472222809397,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.3301282051282051,
+                    "median": 0.0,
+                    "std": 0.44592962460822244,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.275335810912734,
+                    "median": 0.16666666666666666,
+                    "std": 0.3115858232797994,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7917065597364308,
+                    "median": 0.8427585630743687,
+                    "std": 0.1888787175552837,
+                    "min": 0.0,
+                    "max": 0.9953692798586579,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9692307692307691,
+                    "median": 1.0,
+                    "std": 0.1111100011044566,
+                    "min": 0.3333333333333333,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.45738431743440744,
+                    "median": 0.4533992051006228,
+                    "std": 0.27927946828377387,
+                    "min": 0.0015906391682658024,
+                    "max": 0.9604170594444043,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8825103999712528,
+                    "median": 0.8805052042007446,
+                    "std": 0.018942185629187522,
+                    "min": 0.8345352411270142,
+                    "max": 0.9259508848190308,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 394.0128205128205,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.8943759970998058
+                },
+                "word_count": {
+                    "mean_output": 57.57692307692308,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.9199851373056418
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs2048-co50-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 2048,
+            "chunk_overlap": 50,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1881.1250967979431,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.27564102564102566,
+                    "median": 0.25,
+                    "std": 0.2949514146369483,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.3333333333333333,
+                    "median": 0.0,
+                    "std": 0.44805979038246196,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.3177356831202985,
+                    "median": 0.18333333333333335,
+                    "std": 0.3399648496594554,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7639732481392165,
+                    "median": 0.8206189204599428,
+                    "std": 0.2104145219075328,
+                    "min": 0.0,
+                    "max": 0.9946489939194124,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9612179487179486,
+                    "median": 1.0,
+                    "std": 0.11351515624880539,
+                    "min": 0.3333333333333333,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.4610740214815202,
+                    "median": 0.44137454550161587,
+                    "std": 0.26933507576357535,
+                    "min": 0.0,
+                    "max": 0.9486656098037681,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.882353880466559,
+                    "median": 0.8817275762557983,
+                    "std": 0.01869213305364606,
+                    "min": 0.8275403380393982,
+                    "max": 0.9257581830024719,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 385.53846153846155,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.8567195851686695
+                },
+                "word_count": {
+                    "mean_output": 56.794871794871796,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.896905381351067
+                }
+            }
+        }
+    },
+    {
+        "experiment_id": "v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs2048-co100-k4",
+        "config": {
+            "rag_type": "cohere",
+            "team_type": "marketing",
+            "embedding_model": "multi-qa-mpnet-base-cos-v1",
+            "chunk_size": 2048,
+            "chunk_overlap": 100,
+            "top_k": 4,
+            "retriever_type": "similarity",
+            "retriever_kwargs": {
+                "k": 4
+            },
+            "templates": {
+                "engineering": "templates/engineering_template_3.txt",
+                "marketing": "templates/marketing_template_2.txt"
+            }
+        },
+        "success": true,
+        "elapsed_time": 1761.7614841461182,
+        "evaluation_type": "ragas",
+        "metrics": {
+            "feedback": {
+                "ragas_answer_accuracy": {
+                    "mean": 0.2692307692307692,
+                    "median": 0.25,
+                    "std": 0.26039814286433155,
+                    "min": 0.0,
+                    "max": 0.75,
+                    "count": 78
+                },
+                "ragas_context_relevance": {
+                    "mean": 0.30128205128205127,
+                    "median": 0.0,
+                    "std": 0.4456845281527042,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_faithfulness": {
+                    "mean": 0.31414326414326416,
+                    "median": 0.25,
+                    "std": 0.3374338201905796,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "ragas_response_relevancy": {
+                    "mean": 0.7989427936798342,
+                    "median": 0.8470897986119351,
+                    "std": 0.1571885356352724,
+                    "min": 0.0,
+                    "max": 0.9999999999997469,
+                    "count": 78
+                },
+                "deepeval_faithfulness": {
+                    "mean": 0.9553418803418803,
+                    "median": 1.0,
+                    "std": 0.15198289163191805,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "count": 78
+                },
+                "deepeval_geval": {
+                    "mean": 0.46665271596745794,
+                    "median": 0.43921995698872124,
+                    "std": 0.25960998965082605,
+                    "min": 0.00999958776425235,
+                    "max": 0.9564663836678173,
+                    "count": 78
+                },
+                "bertscore_evaluator": {
+                    "mean": 0.8842872052620618,
+                    "median": 0.8837425410747528,
+                    "std": 0.017743316845505654,
+                    "min": 0.8498842120170593,
+                    "max": 0.9259508848190308,
+                    "count": 78
+                }
+            },
+            "text_comparison": {
+                "character_length": {
+                    "mean_output": 374.05128205128204,
+                    "mean_reference": 252.96153846153845,
+                    "mean_ratio": 1.767209150969739
+                },
+                "word_count": {
+                    "mean_output": 54.56410256410256,
+                    "mean_reference": 36.94871794871795,
+                    "mean_ratio": 1.7859557091343334
+                }
+            }
+        }
+    }
+]
