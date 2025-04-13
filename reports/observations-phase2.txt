@@ -1,3 +1,4 @@
+```
 $ uv run python analyze_top_performers.py results/phase2_ragas_20250412_144026/results.json --visualize --output_dir results/phase2_ragas_20250412_144026/analysis_output/
 
 ================================================================================
@@ -99,3 +100,67 @@ OVERALL TOP PERFORMER (based on average ranking across all metrics):
 
 Analysis saved to results/phase2_ragas_20250412_144026/analysis_output
 Visualizations saved to results/phase2_ragas_20250412_144026/analysis_output/
+```
+
+```
+$ uv run python analyze_statistical_significance.py --results_path results/phase2_ragas_20250412_144026-final/
+=== ANOVA Results ===
+correctness: F=0.0000, p=1.0000, significant=False
+groundedness: F=0.0000, p=1.0000, significant=False
+relevance: F=0.0000, p=1.0000, significant=False
+retrieval_relevance: F=0.0000, p=1.0000, significant=False
+ragas_answer_accuracy: F=1.2149, p=0.2199, significant=False
+ragas_context_relevance: F=1.7110, p=0.0191, significant=True
+ragas_faithfulness: F=2.2549, p=0.0006, significant=True
+ragas_response_relevancy: F=2.0811, p=0.0019, significant=True
+deepeval_faithfulness: F=1.9557, p=0.0043, significant=True
+deepeval_geval: F=2.4321, p=0.0002, significant=True
+bertscore_evaluator: F=2.1885, p=0.0009, significant=True
+
+Found 75 significant differences out of 1932 comparisons (3.88%)
+
+=== Top Significant Differences (by Effect Size) ===
+Metric: bertscore_evaluator
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k4 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs512-co50-k4
+  p-value: 0.0027, effect size: 0.49
+Metric: deepeval_faithfulness
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs256-co50-k4 vs v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs2048-co0-k4
+  p-value: 0.0033, effect size: 0.48
+Metric: bertscore_evaluator
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k4 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs512-co0-k4
+  p-value: 0.0050, effect size: 0.46
+Metric: bertscore_evaluator
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs2048-co50-k4 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs512-co50-k4
+  p-value: 0.0054, effect size: 0.45
+Metric: bertscore_evaluator
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs256-co100-k4 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs512-co50-k4
+  p-value: 0.0056, effect size: 0.45
+Metric: deepeval_faithfulness
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs256-co50-k4 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs512-co50-k4
+  p-value: 0.0063, effect size: 0.45
+Metric: bertscore_evaluator
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k4 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs256-co0-k4
+  p-value: 0.0082, effect size: 0.43
+Metric: bertscore_evaluator
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs2048-co0-k4 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs512-co50-k4
+  p-value: 0.0092, effect size: 0.42
+Metric: bertscore_evaluator
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs256-co0-k4 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs512-co50-k4
+  p-value: 0.0093, effect size: 0.42
+Metric: bertscore_evaluator
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs256-co50-k4 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs512-co50-k4
+  p-value: 0.0098, effect size: 0.42
+
+=== Regression Analysis Results ===
+ragas_answer_accuracy: R² = 0.020, CS coef = 0.0000, CO coef = -0.0000
+ragas_context_relevance: R² = 0.696, CS coef = 0.0000, CO coef = 0.0001
+ragas_faithfulness: R² = 0.286, CS coef = 0.0000, CO coef = 0.0002
+ragas_response_relevancy: R² = 0.026, CS coef = -0.0000, CO coef = -0.0000
+deepeval_faithfulness: R² = 0.153, CS coef = 0.0000, CO coef = -0.0001
+deepeval_geval: R² = 0.036, CS coef = -0.0000, CO coef = 0.0001
+bertscore_evaluator: R² = 0.021, CS coef = -0.0000, CO coef = -0.0000
+
+Analysis complete. Results saved to results/phase2_ragas_20250412_144026-final/analysis_output directory.
+```
+
+General observations:
