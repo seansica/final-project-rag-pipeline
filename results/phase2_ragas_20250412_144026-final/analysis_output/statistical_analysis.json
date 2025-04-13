@@ -1,0 +1,113 @@
+{
+  "anova_results": {
+    "correctness": {
+      "f_value": 0.0,
+      "p_value": 1.0,
+      "significant": false
+    },
+    "groundedness": {
+      "f_value": 0.0,
+      "p_value": 1.0,
+      "significant": false
+    },
+    "relevance": {
+      "f_value": 0.0,
+      "p_value": 1.0,
+      "significant": false
+    },
+    "retrieval_relevance": {
+      "f_value": 0.0,
+      "p_value": 1.0,
+      "significant": false
+    },
+    "ragas_answer_accuracy": {
+      "f_value": 1.2149330950654753,
+      "p_value": 0.2199120517516541,
+      "significant": false
+    },
+    "ragas_context_relevance": {
+      "f_value": 1.7109794246604793,
+      "p_value": 0.01905324038196502,
+      "significant": true
+    },
+    "ragas_faithfulness": {
+      "f_value": 2.2548957756490604,
+      "p_value": 0.000594585283903816,
+      "significant": true
+    },
+    "ragas_response_relevancy": {
+      "f_value": 2.08108514970245,
+      "p_value": 0.0019244312107857787,
+      "significant": true
+    },
+    "deepeval_faithfulness": {
+      "f_value": 1.9557132043667558,
+      "p_value": 0.004331619984470774,
+      "significant": true
+    },
+    "deepeval_geval": {
+      "f_value": 2.432133775067984,
+      "p_value": 0.00017042996861317956,
+      "significant": true
+    },
+    "bertscore_evaluator": {
+      "f_value": 2.1884912961511014,
+      "p_value": 0.0009372548239507257,
+      "significant": true
+    }
+  },
+  "significant_tests": 75,
+  "total_tests": 1932,
+  "significant_percentage": 0.03881987577639751,
+  "regression_analysis": [
+    {
+      "metric": "ragas_answer_accuracy",
+      "intercept": 0.28832799145299165,
+      "chunk_size_coefficient": 3.7560096153846266e-06,
+      "chunk_overlap_coefficient": -4.006410256410233e-05,
+      "r_squared": 0.020427627721531394
+    },
+    {
+      "metric": "ragas_context_relevance",
+      "intercept": 0.24917839557785212,
+      "chunk_size_coefficient": 3.0556136194723146e-05,
+      "chunk_overlap_coefficient": 0.00012419871794871844,
+      "r_squared": 0.6956587790859369
+    },
+    {
+      "metric": "ragas_faithfulness",
+      "intercept": 0.26823678919118593,
+      "chunk_size_coefficient": 2.4578625067668348e-05,
+      "chunk_overlap_coefficient": 0.00024294068645030272,
+      "r_squared": 0.28563323064557133
+    },
+    {
+      "metric": "ragas_response_relevancy",
+      "intercept": 0.8004989778342012,
+      "chunk_size_coefficient": -3.88969159607629e-06,
+      "chunk_overlap_coefficient": -4.297093773434726e-06,
+      "r_squared": 0.02610364719785674
+    },
+    {
+      "metric": "deepeval_faithfulness",
+      "intercept": 0.9589703912733805,
+      "chunk_size_coefficient": 7.011045139441852e-06,
+      "chunk_overlap_coefficient": -7.137133699633353e-05,
+      "r_squared": 0.1532952974189682
+    },
+    {
+      "metric": "deepeval_geval",
+      "intercept": 0.49983070942464775,
+      "chunk_size_coefficient": -5.307798587344184e-06,
+      "chunk_overlap_coefficient": 7.713860227638448e-05,
+      "r_squared": 0.036419417054548875
+    },
+    {
+      "metric": "bertscore_evaluator",
+      "intercept": 0.8821359547640718,
+      "chunk_size_coefficient": -4.6302092205208526e-07,
+      "chunk_overlap_coefficient": -5.6348941647093635e-06,
+      "r_squared": 0.021476806732846687
+    }
+  ]
+}
