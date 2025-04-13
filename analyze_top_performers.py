@@ -330,6 +330,28 @@ def print_top_performers(top_performers: Dict[str, Any]):
         print(f"    - Top K: {config['top_k']}")
         print(f"    - Retriever Type: {config['retriever_type']}")
     
+    # Print DeepEval metrics
+    deepeval_metrics = [k for k in top_performers.keys() if k in ['faithfulness', 'rag_quality']]
+    if deepeval_metrics:
+        print("\nDEEPEVAL METRICS (higher is better):")
+        print("-" * 50)
+        
+        for metric in deepeval_metrics:
+            performer = top_performers[metric]
+            config = performer['config']
+            
+            print(f"\n{metric.upper()}:")
+            print(f"  Score: {performer['score']:.4f}")
+            print(f"  Experiment: {performer['experiment_id']}")
+            print(f"  Configuration:")
+            print(f"    - RAG Type: {config['rag_type']}")
+            print(f"    - Team Type: {config['team_type']}")
+            print(f"    - Embedding Model: {config['embedding_model']}")
+            print(f"    - Chunk Size: {config['chunk_size']}")
+            print(f"    - Chunk Overlap: {config['chunk_overlap']}")
+            print(f"    - Top K: {config['top_k']}")
+            print(f"    - Retriever Type: {config['retriever_type']}")
+    
     # Print text comparison metrics
     print("\nTEXT COMPARISON METRICS (closer to reference length is better):")
     print("-" * 50)

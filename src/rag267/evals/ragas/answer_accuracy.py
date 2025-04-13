@@ -14,9 +14,6 @@ def ragas_answer_accuracy(inputs: dict, outputs: dict) -> float:
     question = inputs["question"]
     generated_answer = outputs["answer"]
     
-    # Log the inputs structure
-    logger.info(f"Inputs structure: {inputs.keys()}")
-    
     try:
         # Clear CUDA cache before evaluation to help with memory
         if torch.cuda.is_available():

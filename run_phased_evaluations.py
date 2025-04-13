@@ -65,6 +65,23 @@ from rag267.evals.ragas.response_relevancy import ragas_response_relevancy
 from rag267.evals.ragas.answer_accuracy import ragas_answer_accuracy
 from rag267.evals.ragas.context_relevance import ragas_context_relevance
 
+# Try to import DeepEval evaluators
+try:
+    from rag267.evals.deepeval.faithfulness_eval import deepeval_faithfulness
+    from rag267.evals.deepeval.geval import deepeval_geval
+    DEEPEVAL_AVAILABLE = True
+except ImportError:
+    logger.warning("DeepEval evaluators not available. Skip importing.")
+    DEEPEVAL_AVAILABLE = False
+
+# Try to import BERTScore evaluator
+try:
+    from rag267.evals.bertscore import bertscore_evaluator
+    BERTSCORE_AVAILABLE = True
+except ImportError:
+    logger.warning("BERTScore evaluator not available. Skip importing.")
+    BERTSCORE_AVAILABLE = False
+
 from langsmith import Client
 
 
@@ -77,8 +94,8 @@ class ExperimentConfig:
         embedding_model: str,
         chunk_size: int,
         chunk_overlap: int,
-        top_k: int,
         retriever_type: str,
+        top_k: Optional[int] = None,
         retriever_kwargs: Optional[Dict[str, Any]] = None,
         templates: Optional[Dict[str, str]] = None,
     ):
@@ -87,9 +104,18 @@ class ExperimentConfig:
         self.embedding_model = embedding_model
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
-        self.top_k = top_k
         self.retriever_type = retriever_type
+        
+        # Initialize retriever_kwargs
         self.retriever_kwargs = retriever_kwargs or {}
+        
+        # Handle top_k based on retriever type
+        self.top_k = top_k
+        # For similarity and mmr retriever types, ensure top_k is set
+        if (retriever_type in ["similarity", "mmr", "multi_query"]) and top_k is not None:
+            # Store top_k in retriever_kwargs if not already there
+            if "k" not in self.retriever_kwargs:
+                self.retriever_kwargs["k"] = top_k
         
         # Default templates
         self.templates = {
@@ -103,16 +129,28 @@ class ExperimentConfig:
             
     def get_experiment_id(self) -> str:
         """Generate a unique experiment ID from the configuration"""
-        retriever_extra = ""
-        if self.retriever_type != "similarity":
-            retriever_extra = f"-{self.retriever_type}"
-            if "score_threshold" in self.retriever_kwargs:
-                retriever_extra += f"-{self.retriever_kwargs['score_threshold']}"
+        # Start with base experiment ID
+        experiment_id = (f"v1-{self.rag_type}-{self.team_type}"
+                        f"-emb-{self.embedding_model.split('/')[-1]}"
+                        f"-cs{self.chunk_size}-co{self.chunk_overlap}")
+        
+        # Add retriever-specific information
+        if self.retriever_type == "similarity":
+            # For similarity retriever, include top_k if available
+            if self.top_k is not None or "k" in self.retriever_kwargs:
+                k_value = self.top_k if self.top_k is not None else self.retriever_kwargs.get("k")
+                experiment_id += f"-k{k_value}"
+        else:
+            # For other retriever types, add type and any relevant parameters
+            experiment_id += f"-{self.retriever_type}"
+            
+            # Add specific parameters for different retriever types
+            if self.retriever_type == "similarity_score_threshold" and "score_threshold" in self.retriever_kwargs:
+                experiment_id += f"-{self.retriever_kwargs['score_threshold']}"
+            elif self.retriever_type in ["mmr", "multi_query"] and "k" in self.retriever_kwargs:
+                experiment_id += f"-k{self.retriever_kwargs['k']}"
                 
-        return (f"rag-{self.rag_type}-{self.team_type}"
-                f"-emb-{self.embedding_model.split('/')[-1]}"
-                f"-cs{self.chunk_size}-co{self.chunk_overlap}"
-                f"-k{self.top_k}{retriever_extra}")
+        return experiment_id
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert config to dictionary for serialization"""
@@ -137,8 +175,8 @@ class ExperimentConfig:
             embedding_model=data["embedding_model"],
             chunk_size=data["chunk_size"],
             chunk_overlap=data["chunk_overlap"],
-            top_k=data["top_k"],
             retriever_type=data["retriever_type"],
+            top_k=data.get("top_k", None),
             retriever_kwargs=data.get("retriever_kwargs", {}),
             templates=data.get("templates", None)
         )
@@ -168,8 +206,8 @@ def create_test_experiments() -> List[ExperimentConfig]:
             embedding_model=emb_model,
             chunk_size=128,  # Baseline 
             chunk_overlap=0,  # Baseline
-            top_k=4,          # Baseline
-            retriever_type="similarity"  # Baseline
+            retriever_type="similarity",  # Baseline
+            top_k=4          # Baseline for similarity retriever
         )
         experiments.append(config)
     
@@ -203,8 +241,8 @@ def create_phase1_experiments() -> List[ExperimentConfig]:
             embedding_model=emb_model,
             chunk_size=128,  # Baseline 
             chunk_overlap=0,  # Baseline
-            top_k=4,          # Baseline
-            retriever_type="similarity"  # Baseline
+            retriever_type="similarity",  # Baseline
+            top_k=4          # Baseline for similarity retriever
         )
         experiments.append(config)
     
@@ -217,7 +255,7 @@ def create_phase2_experiments(best_embedding_model: str) -> List[ExperimentConfi
     
     # Define the core parameters to test
     rag_models = ["cohere"] # optionally add mistral: ["cohere", "mistral"]
-    team_types = ["engineering"]
+    team_types = ["engineering", "marketing"]
     
     # Chunk sizes and overlaps to test
     chunk_sizes = [256, 512, 1024, 2048]
@@ -240,8 +278,8 @@ def create_phase2_experiments(best_embedding_model: str) -> List[ExperimentConfi
             embedding_model=best_embedding_model,
             chunk_size=size,
             chunk_overlap=overlap,
-            top_k=4,  # Baseline
-            retriever_type="similarity"  # Baseline
+            retriever_type="similarity",  # Baseline
+            top_k=4  # Baseline for similarity retriever
         )
         experiments.append(config)
     
@@ -255,7 +293,7 @@ def create_phase3_experiments(best_embedding_model: str, best_chunk_size: int,
     
     # Define the core parameters to test
     rag_models = ["cohere"] # optionally add mistral: ["cohere", "mistral"]
-    team_types = ["engineering"]
+    team_types = ["engineering", "marketing"]
     
     # Define a focused matrix of experiments
     experiments = []
@@ -270,8 +308,8 @@ def create_phase3_experiments(best_embedding_model: str, best_chunk_size: int,
             embedding_model=best_embedding_model,
             chunk_size=best_chunk_size,
             chunk_overlap=best_chunk_overlap,
-            top_k=k,
-            retriever_type="similarity"
+            retriever_type="similarity",
+            top_k=k  # Testing different k values
         )
         experiments.append(config)
     
@@ -283,8 +321,8 @@ def create_phase3_experiments(best_embedding_model: str, best_chunk_size: int,
             embedding_model=best_embedding_model,
             chunk_size=best_chunk_size,
             chunk_overlap=best_chunk_overlap,
-            top_k=4,  # Baseline
             retriever_type="similarity_score_threshold",
+            top_k=4,  # Baseline for similarity threshold
             retriever_kwargs={"score_threshold": threshold}
         )
         experiments.append(config)
@@ -297,8 +335,8 @@ def create_phase3_experiments(best_embedding_model: str, best_chunk_size: int,
             embedding_model=best_embedding_model,
             chunk_size=best_chunk_size,
             chunk_overlap=best_chunk_overlap,
-            top_k=4,  # Baseline
             retriever_type="mmr",
+            # For mmr, we include the k parameter in retriever_kwargs instead of top_k
             retriever_kwargs={"k": 4, "fetch_k": 8}  # Fetch more but return top 4
         )
         experiments.append(config)
@@ -312,8 +350,8 @@ def create_phase3_experiments(best_embedding_model: str, best_chunk_size: int,
             embedding_model=best_embedding_model,
             chunk_size=best_chunk_size,
             chunk_overlap=best_chunk_overlap,
-            top_k=4,  # Baseline
             retriever_type="multi_query",
+            # For multi_query, we include the k parameter in retriever_kwargs
             retriever_kwargs={"llm_for_queries": rag_type, "k": 4}
         )
         experiments.append(config)
@@ -440,27 +478,57 @@ def run_evaluation(config: ExperimentConfig, cohere_api_key: str, use_ragas: boo
     # Create target function
     target = create_target_function(rag_system, team)
     
-    # Get experiment ID
+    # Get experiment ID - no longer modifying based on evaluation type
     experiment_id = config.get_experiment_id()
-    if use_ragas:
-        experiment_id = f"ragas-{experiment_id}"
     logger.info(f"Starting evaluation: {experiment_id}")
     
     start_time = time.time()
     result_data = {}
     
     try:
-        # Choose which evaluators to use based on the ragas flag
+        # Build list of evaluators based on the flags - can include multiple types
+        evaluators = []
+        
+        # Add standard evaluators - use by default if nothing else is specified or if explicitly requested
+        if args.standard or (not args.ragas and not args.deepeval):
+            logger.info("Adding standard evaluators")
+            evaluators.extend([
+                correctness, 
+                groundedness, 
+                relevance, 
+                retrieval_relevance
+            ])
+        
+        # Add RAGAS evaluators if requested
         if use_ragas:
-            logger.info("Using Ragas evaluations")
-            evaluators = [
+            logger.info("Adding RAGAS evaluators")
+            evaluators.extend([
                 ragas_answer_accuracy, 
                 ragas_context_relevance, 
                 ragas_faithfulness, 
                 ragas_response_relevancy
-            ]
-        else:
-            logger.info("Using original evaluations")
+            ])
+        
+        # Add DeepEval evaluators if requested and available
+        if args.deepeval and DEEPEVAL_AVAILABLE:
+            # Check that OpenAI API key is available (required for DeepEval)
+            if not os.getenv("OPENAI_API_KEY"):
+                logger.error("OPENAI_API_KEY environment variable is required for DeepEval to work")
+            else:
+                logger.info("Adding DeepEval evaluators")
+                evaluators.extend([
+                    deepeval_faithfulness,
+                    deepeval_geval
+                ])
+        
+        # Add BERTScore evaluator if requested and available
+        if args.bertscore and BERTSCORE_AVAILABLE:
+            logger.info("Adding BERTScore evaluator")
+            evaluators.append(bertscore_evaluator)
+        
+        # If no evaluators were added, fall back to standard evaluators
+        if not evaluators:
+            logger.warning("No evaluators selected. Falling back to standard evaluators.")
             evaluators = [
                 correctness, 
                 groundedness, 
@@ -774,6 +842,12 @@ def parse_arguments():
     # Evaluation selector
     parser.add_argument("--ragas", action="store_true",
                        help="Use Ragas evaluations (answer_accuracy, context_relevance, faithfulness, response_relevancy)")
+    parser.add_argument("--deepeval", action="store_true",
+                       help="Use DeepEval evaluations (faithfulness, geval) - requires OpenAI API key")
+    parser.add_argument("--bertscore", action="store_true",
+                       help="Use BERTScore evaluation to measure semantic similarity with reference answers")
+    parser.add_argument("--standard", action="store_true", 
+                       help="Use standard evaluations (will be used by default if no other evaluators are specified)")
     
     # Dataset limiting
     parser.add_argument("--limit", type=int, default=78,
@@ -801,11 +875,35 @@ if __name__ == "__main__":
         best_params['chunk_size'] = args.chunk_size
         best_params['chunk_overlap'] = args.chunk_overlap
     
-    # Log which evaluation set we're using
+    # Log which evaluation sets we're using
+    evaluators_used = []
+    
+    # Standard evaluations - use by default if nothing else is specified or if explicitly requested
+    if args.standard or (not args.ragas and not args.deepeval and not args.bertscore):
+        logger.info("Using standard evaluations: correctness, groundedness, relevance, retrieval_relevance")
+        evaluators_used.append("standard")
+    
+    # RAGAS evaluations
     if args.ragas:
         logger.info("Using Ragas evaluations: answer_accuracy, context_relevance, faithfulness, response_relevancy")
-    else:
-        logger.info("Using standard evaluations: correctness, groundedness, relevance, retrieval_relevance")
+        evaluators_used.append("ragas")
+    
+    # DeepEval evaluations
+    if args.deepeval and DEEPEVAL_AVAILABLE:
+        if not os.getenv("OPENAI_API_KEY"):
+            logger.error("OPENAI_API_KEY environment variable is required for DeepEval evaluations")
+        else:
+            logger.info("Using DeepEval evaluations: faithfulness, geval")
+            evaluators_used.append("deepeval")
+            
+    # BERTScore evaluations
+    if args.bertscore and BERTSCORE_AVAILABLE:
+        logger.info("Using BERTScore evaluation for semantic similarity measurement")
+        evaluators_used.append("bertscore")
+    
+    if not evaluators_used:
+        logger.warning("No evaluators selected. Falling back to standard evaluations.")
+        evaluators_used.append("standard")
         
     # Log the question limit
     if args.limit < 78:

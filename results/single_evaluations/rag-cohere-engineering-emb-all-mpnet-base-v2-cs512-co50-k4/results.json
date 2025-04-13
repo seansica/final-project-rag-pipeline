@@ -1,0 +1,121 @@
+{
+  "experiment_id": "rag-cohere-engineering-emb-all-mpnet-base-v2-cs512-co50-k4",
+  "config": {
+    "rag_type": "cohere",
+    "team_type": "engineering",
+    "embedding_model": "all-mpnet-base-v2",
+    "chunk_size": 512,
+    "chunk_overlap": 50,
+    "top_k": 4,
+    "retriever_type": "similarity",
+    "retriever_kwargs": {
+      "k": 4
+    }
+  },
+  "success": true,
+  "elapsed_time": 144.13054585456848,
+  "evaluation_type": "original",
+  "metrics": {
+    "feedback": {
+      "correctness": {
+        "mean": 0.8,
+        "median": 1.0,
+        "std": 0.42163702135578396,
+        "min": 0.0,
+        "max": 1.0,
+        "count": 10
+      },
+      "groundedness": {
+        "mean": 0.6,
+        "median": 1.0,
+        "std": 0.5163977794943223,
+        "min": 0.0,
+        "max": 1.0,
+        "count": 10
+      },
+      "relevance": {
+        "mean": 1.0,
+        "median": 1.0,
+        "std": 0.0,
+        "min": 1.0,
+        "max": 1.0,
+        "count": 10
+      },
+      "retrieval_relevance": {
+        "mean": 0.9,
+        "median": 1.0,
+        "std": 0.31622776601683794,
+        "min": 0.0,
+        "max": 1.0,
+        "count": 10
+      }
+    },
+    "text_comparison": {
+      "character_length": {
+        "mean_output": 2356.4,
+        "mean_reference": 565.7,
+        "mean_ratio": 4.278111722478878
+      },
+      "word_count": {
+        "mean_output": 338.7,
+        "mean_reference": 82.6,
+        "mean_ratio": 4.283764371496953
+      }
+    }
+  },
+  "performance": {
+    "timing": {
+      "query_time": {
+        "mean": 0.01692929267883301,
+        "median": 0.01687145233154297,
+        "min": 0.015979766845703125,
+        "max": 0.01907825469970703,
+        "std": 0.0008552817778901773,
+        "p90": 0.01907825469970703,
+        "p95": 0.01907825469970703,
+        "total": 0.16929292678833008
+      },
+      "response_time": {
+        "mean": 3.076093912124634,
+        "median": 3.1043916940689087,
+        "min": 1.9986774921417236,
+        "max": 4.246500730514526,
+        "std": 0.7850332912965767,
+        "p90": 4.246500730514526,
+        "p95": 4.246500730514526,
+        "total": 30.760939121246338
+      },
+      "total_time": {
+        "mean": 3.0930232048034667,
+        "median": 3.121063470840454,
+        "min": 2.0150320529937744,
+        "max": 4.262895822525024,
+        "std": 0.784745647109397,
+        "p90": 4.262895822525024,
+        "p95": 4.262895822525024,
+        "total": 30.930232048034668
+      }
+    },
+    "memory": {
+      "rss_change": {
+        "mean": 2.526953125,
+        "max": 11.515625
+      },
+      "final_rss": {
+        "mean": 1349.16953125,
+        "max": 1353.03515625
+      }
+    },
+    "system_load": {
+      "cpu_percent": {
+        "mean": 0.0,
+        "max": 0.0
+      },
+      "memory_percent": {
+        "mean": 24.82,
+        "max": 24.9
+      }
+    },
+    "sample_count": 10
+  }
+}

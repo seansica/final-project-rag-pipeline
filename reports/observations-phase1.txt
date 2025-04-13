@@ -1,0 +1,147 @@
+Phase 1: results/phase1_ragas_20250411_174100/analysis_output-final/
+
+- Generally, BERTScore always yields around 0.88. I think this signals that the semantic similarity between the actual and reference outputs are mostly aligned, even if the context is lacking in relevancy or accuracy.
+
+- The `deepeval_faithfulness` measure (which is what DeepEval states meaures hallucination in RAG systems) is averages in 95-th percentile, which the vast majority of questions in any given experiment receiving a perfect score (1.00). This number is suspiciously high and suggests that either the evaluation is fundamentally flawed OR that my RAG system does an exceptionally good job at producing output that factually aligns with the contents of the retrieved documents. This may be attributed to the quality of the retriever, or it may be attributed to latent knowledge preencoded in the pretrained LLM (command-r). Unfortunately there are too many confounding factors to attribute cause of the exceptional scores to some tuneable quality of the RAG system itself.factors
+
+- The `deepeval_geval` (DeepEval's G-Eval) measure consistently lands around 0.50 on average across experiment suites in phase 1. To review, G-Eval is a framework that uses LLM-as-a-judge with chain-of-thoughts (CoT) to evaluate LLM outputs based on ANY custom criteria. The DeepEval documentation claims that the G-Eval metric is their most versatile type of metric, and is capable of evaluating almost any use case with human-like accuracy.
+    - I am inclined to agree with them here based on my human evaluation of randomly sampled RAG traces in LangSmith.
+    - Let's look at an example from phase 1: engineering, all-distilroberta-v1, cs128, co0, similarity_score with top_k=4:
+        - Worst performining question-answer pair: 
+            - Score: 0.11
+            - Question: "Who developed the language model family known as Chinchilla?"
+            - Actual Output: "Chinchilla, a family of language models, originated from the collaborative efforts of Patrick Lewis, Anton Bakhtin, Yuxiang Wu, and Alexander Miller. These researchers pioneered the development of these models in 2019, contributing significantly to the advancement of language modelling."
+            - Expected Output: "The Chinchilla language model family was developed by the research team at DeepMind and presented in March 2022. It is named 'Chinchilla' as an advancement over the previous Gopher model family. The Chinchilla family has been trained to investigate the scaling laws of large language models and is designed to outperform GPT-3."
+            - Reason for score: "The actual output incorrectly attributes the development of Chinchilla to Patrick Lewis and colleagues, while the expected output correctly identifies DeepMind as the developer. The context does not support the actual output's development claims, nor does it mention the 2019 timeline. The core facts about Chinchilla's development are misrepresented, contradicting evaluation steps 2 and 3."
+        - Best performing question-answer pair:
+            - Score: 0.88
+            - Question: "What is the purpose of using a regularization term (like the epsilon multiplied by the identity matrix) in the linear regression model described in the code?"
+            - Actual Output: "The regularization term, such as epsilon multiplied by the identity matrix, is added to the linear regression model to mitigate overfitting by maximizing the log-likelihood of the training dataset. This technique, known as regularization, helps to improve the model's generalization performance by penalizing extreme coefficients. It encourages the model to learn general patterns rather than focusing solely on fitting the training data."
+            - Expected Output: "The purpose of using a regularization term (epsilon multiplied by the identity matrix) in the linear regression model described in the code is to prevent overfitting by adding a penalty term to the loss function. This regularization term helps to control the complexity of the model by discouraging large coefficients, leading to a more stable and generalizable solution. By incorporating this regularization, the model can better handle noise and outliers in the data, ultimately improving its performance on unseen data points."
+            - Reason for score: "The answer addresses the question by explaining the purpose of regularization to prevent overfitting and aligns with the context mentioning log-likelihood maximization. It matches the expected output in terms of preventing overfitting and handling data noise, but slightly diverges by not explicitly mentioning handling outliers, thus leading to a high but not perfect score."
+    - These scores are empirically similar to what I think a human would ascribe, and the reasons are grounded and well articulated.
+            
+- The original/simple evaluations, borrowed from a LangChain tutorial, are simplistic and harsh. They each rely on exactly one LLM-as-a-judge inference call, and the judge is instructed to produce a binary score. Thus each question-answer pair produces either a 0.00 or 1.00. There is no balancing from averaging and normalizing multiple judge calls, and this is reflected in the average scores: well performing evaluations gravitate strongly towards 1.00, and poorly performing evaluations gravitate strongly towards 0.00. The metrics fail to capture any nuance.
+
+- Ragas improves on the original evals a little bit, but not much.
+    - Ragas accuracy is a normalized average of several LLM-as-a-judge calls, so accuracy results iterate in units of 0.25, rather than 1.00. This captures a little bit more nuance than before.
+    - Ragas context relevance was extremely harsh. On average, over 80% of q/a-pairs would receive a score of 0.00, and the rest would vary between 0.25 and 1.00.
+    - Ragas faithfulness was also extremely harsh. This tracks with the original/simple "Groundedness" evaluation, though the Ragas flavor was even more harsh.
+    - Ragas response relevancy was conversely very optimistic, scoring the vast majority of pairs a 1.00. This tracks with the original/simple "Relevance" evaluation.
+
+No stark differences between engineering and marketing.
+    - BERTScore still scores 0.88 on average.
+    - Original/simple evals:
+        - Correctness very low (around 0.35) --> compare to Ragas Answer Accuracy low (around 0.25) - ragas slightly more harsh
+        - Groundedness very low (around 0.25) --> compare to Ragas faithfulness very low (around 0.15) - 
+        - Relevance very high (around 0.80) --> compare to Ragas Response Relevance very high (around 0.80)
+        - Retrieval relevance very high (around 0.75) --> compare to Ragas Context Relevance very low (around 0.15)
+            - This is very interesting because these evaluations measure the same thing but produce opposite results. It suggests there is either an issue with one of the evaluation methods OR one of them fails to reflect some critical aspect of measuring relevance.
+
+
+Let's shift to embedding models though, since that is the independent variable that we are measuring in phase 1. We hold all other factors equal: vector store, retriever method, LLM model and prompt.
+
+To determine the best performing embedding model, we start by, for each evaluation suite (or set of 78 questions), taking the average score across all evaluation metrics (4 simple metrics, 4 Ragas metrics, 2 DeepEval metrics, and 3 heuristics [word count, character count, and BERTScore]):
+
+The vast majority of metrics fall within a very narrow standard deviation, so it's almost a toss-up as to which embedding model is the most performant. Only one pass was executed for each q-a pair, so it's possible that slightly.
+
+Let's calculate a p-value to see if we can attribute the scores to random chance. After all, we don't want to select the top performing embedding model based on chance alone.
+
+  1. ANOVA Results:
+    - Out of 11 metrics, 5 show statistically significant differences across experiments (p<0.05): groundedness, relevance, ragas_answer_accuracy, ragas_response_relevancy, and deepeval_geval.
+    - This means these metrics reliably differ between at least some of the experimental configurations.
+    - Metrics like correctness (p=0.7982) show no significant differences, suggesting all configurations perform similarly for this metric.
+  2. Significant Differences:
+    - Only 25 out of 495 possible comparisons (5.05%) were statistically significant.
+    - This is close to what we'd expect by chance (5% at α=0.05), suggesting many "differences" may be random variation.
+  3. Effect Sizes:
+    - Cohen's d measures practical significance - how meaningful a difference is:
+        - 0.2 = small effect
+      - 0.5 = medium effect
+      - 0.8 = large effect
+    - The largest effect (d=0.70) is for "relevance" between engineering vs. marketing configurations.
+    - Most significant differences have medium effect sizes (0.4-0.7).
+  4. Key Finding:
+    - The team_type (engineering vs. marketing) has the most impact on relevance scores.
+    - Engineering configurations consistently outperform marketing ones for relevance.
+    - This pattern isn't random - it's statistically significant with meaningful effect sizes.
+
+In summary, while most metrics show only chance-level variation across configurations, relevance scores genuinely differ between team types. This suggests my choice of prompt template (engineering vs. marketing) matters more than embedding model or other parameters.
+
+Here are the raw results:
+```
+=== ANOVA Results ===
+correctness: F=0.5993, p=0.7982, significant=False
+groundedness: F=2.9733, p=0.0017, significant=True
+relevance: F=6.9603, p=0.0000, significant=True
+retrieval_relevance: F=1.5955, p=0.1123, significant=False
+ragas_answer_accuracy: F=2.6327, p=0.0053, significant=True
+ragas_context_relevance: F=1.6121, p=0.1075, significant=False
+ragas_faithfulness: F=1.3169, p=0.2239, significant=False
+ragas_response_relevancy: F=2.7263, p=0.0039, significant=True
+deepeval_faithfulness: F=1.7797, p=0.0685, significant=False
+deepeval_geval: F=2.8700, p=0.0024, significant=True
+bertscore_evaluator: F=1.5973, p=0.1118, significant=False
+
+Found 25 significant differences out of 495 comparisons (5.05%)
+
+=== Top Significant Differences (by Effect Size) ===
+Metric: relevance
+  v1-cohere-engineering-emb-all-mpnet-base-v2-cs128-co0-k4 vs v1-cohere-marketing-emb-all-distilroberta-v1-cs128-co0-k4
+  p-value: 0.0000, effect size: 0.70
+Metric: relevance
+  v1-cohere-engineering-emb-all-mpnet-base-v2-cs128-co0-k4 vs v1-cohere-marketing-emb-all-mpnet-base-v2-cs128-co0-k4
+  p-value: 0.0001, effect size: 0.64
+Metric: relevance
+  v1-cohere-engineering-emb-all-MiniLM-L6-v2-cs128-co0-k4 vs v1-cohere-marketing-emb-all-distilroberta-v1-cs128-co0-k4
+  p-value: 0.0008, effect size: 0.55
+Metric: relevance
+  v1-cohere-engineering-emb-all-distilroberta-v1-cs128-co0-k4 vs v1-cohere-marketing-emb-all-distilroberta-v1-cs128-co0-k4
+  p-value: 0.0008, effect size: 0.55
+Metric: relevance
+  v1-cohere-engineering-emb-all-mpnet-base-v2-cs128-co0-k4 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs128-co0-k4
+  p-value: 0.0014, effect size: 0.52
+Metric: relevance
+  v1-cohere-engineering-emb-all-distilroberta-v1-cs128-co0-k4 vs v1-cohere-marketing-emb-all-mpnet-base-v2-cs128-co0-k4
+  p-value: 0.0025, effect size: 0.49
+Metric: relevance
+  v1-cohere-engineering-emb-all-MiniLM-L6-v2-cs128-co0-k4 vs v1-cohere-marketing-emb-all-mpnet-base-v2-cs128-co0-k4
+  p-value: 0.0025, effect size: 0.49
+Metric: relevance
+  v1-cohere-engineering-emb-all-mpnet-base-v2-cs128-co0-k4 vs v1-cohere-marketing-emb-all-MiniLM-L6-v2-cs128-co0-k4
+  p-value: 0.0047, effect size: 0.46
+Metric: relevance
+  v1-cohere-engineering-emb-all-mpnet-base-v2-cs128-co0-k4 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-dot-v1-cs128-co0-k4
+  p-value: 0.0047, effect size: 0.46
+Metric: relevance
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs128-co0-k4 vs v1-cohere-marketing-emb-all-distilroberta-v1-cs128-co0-k4
+  p-value: 0.0090, effect size: 0.42
+```
+
+Conclusions:
+
+For engineering, the best performing model is: multi-qa-mpnet-base-cos-v1
+Justification:
+  1. This model achieved the highest overall score (0.615) among all engineering configurations
+  2. It performed especially well in metrics that show statistical significance:
+    - High relevance (0.885)
+    - Strong ragas_faithfulness (0.204, highest of all models)
+    - Good ragas_response_relevancy (0.825)
+    - Solid deepeval_geval (0.504)
+
+For marketing: multi-qa-mpnet-base-cos-v1
+Justification:
+  1. It has the highest overall score (0.423) among marketing configurations
+  2. Despite lower performance than engineering configurations, it showed strengths in:
+    - Highest correctness (0.423) of all models
+    - Best ragas_context_relevance (0.218) of all models
+    - Good BERTScore (0.881)
+
+However, these recommendations come with significant caveats:
+
+  1. Statistical significance is limited: Only 5.05% of comparisons showed statistical significance, which is what we'd expect by random chance. This suggests most differences between models are not meaningful.
+  2. Team type matters more than embedding model: The analysis showed that the most significant differences were between engineering vs. marketing configurations rather than between different embedding
+  models. Engineering templates consistently outperformed marketing ones for relevance metrics.
+  3. Narrow performance range: the vast majority of metrics fall within a very narrow standard deviation.
+
+So while multi-qa-mpnet-base-cos-v1 technically performed best for both team types, the data suggests that embedding model choice is less important than other factors, at least for the baseline configuration. Definitively, the engineering template consistently outperforms marketing, regardless of embedding model selection.

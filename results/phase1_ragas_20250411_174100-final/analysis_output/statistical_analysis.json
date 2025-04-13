@@ -1,0 +1,62 @@
+{
+  "anova_results": {
+    "correctness": {
+      "f_value": 0.5993364745752953,
+      "p_value": 0.7981752670923963,
+      "significant": false
+    },
+    "groundedness": {
+      "f_value": 2.973326645312621,
+      "p_value": 0.0017403701104603828,
+      "significant": true
+    },
+    "relevance": {
+      "f_value": 6.96030150905582,
+      "p_value": 1.0754733980808734e-09,
+      "significant": true
+    },
+    "retrieval_relevance": {
+      "f_value": 1.595495758851273,
+      "p_value": 0.11232053500730924,
+      "significant": false
+    },
+    "ragas_answer_accuracy": {
+      "f_value": 2.6326652816946763,
+      "p_value": 0.0052755497080906755,
+      "significant": true
+    },
+    "ragas_context_relevance": {
+      "f_value": 1.6121382005091394,
+      "p_value": 0.10753111140115502,
+      "significant": false
+    },
+    "ragas_faithfulness": {
+      "f_value": 1.3169029793327758,
+      "p_value": 0.22393100378264902,
+      "significant": false
+    },
+    "ragas_response_relevancy": {
+      "f_value": 2.726312668688586,
+      "p_value": 0.0039038071828894844,
+      "significant": true
+    },
+    "deepeval_faithfulness": {
+      "f_value": 1.7797454100255305,
+      "p_value": 0.0684594180242812,
+      "significant": false
+    },
+    "deepeval_geval": {
+      "f_value": 2.8699551362459186,
+      "p_value": 0.0024459418646557043,
+      "significant": true
+    },
+    "bertscore_evaluator": {
+      "f_value": 1.597306921310498,
+      "p_value": 0.11179044153633053,
+      "significant": false
+    }
+  },
+  "significant_tests": 25,
+  "total_tests": 495,
+  "significant_percentage": 0.050505050505050504
+}

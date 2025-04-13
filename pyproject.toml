@@ -38,6 +38,11 @@ dependencies = [
     "seaborn>=0.13.2",
     "bert-score>=0.3.13",
     "ipykernel>=6.29.5",
+    "gputil>=1.4.0",
+    "bitsandbytes>=0.45.5",
+    "deepeval>=2.7.1",
+    "scipy>=1.15.2",
+    "numpy>=2.2.3",
 ]
 
 [project.scripts]

@@ -1,0 +1,101 @@
+$ uv run python analyze_top_performers.py results/phase2_ragas_20250412_144026/results.json --visualize --output_dir results/phase2_ragas_20250412_144026/analysis_output/
+
+================================================================================
+TOP PERFORMING RAG SYSTEMS BY METRIC
+================================================================================
+
+RAGAS METRICS (higher is better):
+--------------------------------------------------
+
+RAGAS_ANSWER_ACCURACY:
+  Score: 0.3333
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k4
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 100
+    - Top K: 4
+    - Retriever Type: similarity
+
+RAGAS_CONTEXT_RELEVANCE:
+  Score: 0.3365
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs2048-co0-k4
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 2048
+    - Chunk Overlap: 0
+    - Top K: 4
+    - Retriever Type: similarity
+
+RAGAS_FAITHFULNESS:
+  Score: 0.3644
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs512-co100-k4
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 512
+    - Chunk Overlap: 100
+    - Top K: 4
+    - Retriever Type: similarity
+
+RAGAS_RESPONSE_RELEVANCY:
+  Score: 0.8311
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co50-k4
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 50
+    - Top K: 4
+    - Retriever Type: similarity
+
+TEXT COMPARISON METRICS (closer to reference length is better):
+--------------------------------------------------
+
+CHARACTER_LENGTH:
+  Original Ratio (output/reference): 0.6710
+  Closeness Score: 2.9496
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co50-k4
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 50
+    - Top K: 4
+    - Retriever Type: similarity
+
+WORD_COUNT:
+  Original Ratio (output/reference): 0.6636
+  Closeness Score: 2.8866
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co50-k4
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 50
+    - Top K: 4
+    - Retriever Type: similarity
+
+OVERALL TOP PERFORMER (based on average ranking across all metrics):
+--------------------------------------------------
+  Overall Score: 0.7639
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k4
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 100
+    - Top K: 4
+    - Retriever Type: similarity
+
+Analysis saved to results/phase2_ragas_20250412_144026/analysis_output
+Visualizations saved to results/phase2_ragas_20250412_144026/analysis_output/

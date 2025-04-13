@@ -1,0 +1,121 @@
+{
+  "experiment_id": "rag-mistral-engineering-emb-all-mpnet-base-v2-cs512-co50-k4",
+  "config": {
+    "rag_type": "mistral",
+    "team_type": "engineering",
+    "embedding_model": "all-mpnet-base-v2",
+    "chunk_size": 512,
+    "chunk_overlap": 50,
+    "top_k": 4,
+    "retriever_type": "similarity",
+    "retriever_kwargs": {
+      "k": 4
+    }
+  },
+  "success": true,
+  "elapsed_time": 555.0590934753418,
+  "evaluation_type": "original",
+  "metrics": {
+    "feedback": {
+      "correctness": {
+        "mean": 0.6,
+        "median": 1.0,
+        "std": 0.5163977794943222,
+        "min": 0.0,
+        "max": 1.0,
+        "count": 10
+      },
+      "groundedness": {
+        "mean": 0.3,
+        "median": 0.0,
+        "std": 0.48304589153964794,
+        "min": 0.0,
+        "max": 1.0,
+        "count": 10
+      },
+      "relevance": {
+        "mean": 0.8,
+        "median": 1.0,
+        "std": 0.42163702135578396,
+        "min": 0.0,
+        "max": 1.0,
+        "count": 10
+      },
+      "retrieval_relevance": {
+        "mean": 0.8,
+        "median": 1.0,
+        "std": 0.4216370213557839,
+        "min": 0.0,
+        "max": 1.0,
+        "count": 10
+      }
+    },
+    "text_comparison": {
+      "character_length": {
+        "mean_output": 2261.9,
+        "mean_reference": 565.7,
+        "mean_ratio": 4.127877538637967
+      },
+      "word_count": {
+        "mean_output": 315.1,
+        "mean_reference": 82.6,
+        "mean_ratio": 3.996937510134874
+      }
+    }
+  },
+  "performance": {
+    "timing": {
+      "query_time": {
+        "mean": 0.04369029998779297,
+        "median": 0.01739633083343506,
+        "min": 0.01591324806213379,
+        "max": 0.2813301086425781,
+        "std": 0.08350319669275078,
+        "p90": 0.2813301086425781,
+        "p95": 0.2813301086425781,
+        "total": 0.4369029998779297
+      },
+      "response_time": {
+        "mean": 40.527964568138124,
+        "median": 42.300177574157715,
+        "min": 27.642303466796875,
+        "max": 46.63787126541138,
+        "std": 5.926193573557749,
+        "p90": 46.63787126541138,
+        "p95": 46.63787126541138,
+        "total": 405.2796456813812
+      },
+      "total_time": {
+        "mean": 40.57165486812592,
+        "median": 42.31688630580902,
+        "min": 27.923633575439453,
+        "max": 46.654839277267456,
+        "std": 5.862311377280178,
+        "p90": 46.654839277267456,
+        "p95": 46.654839277267456,
+        "total": 405.71654868125916
+      }
+    },
+    "memory": {
+      "rss_change": {
+        "mean": 8.6515625,
+        "max": 75.21875
+      },
+      "final_rss": {
+        "mean": 1803.821484375,
+        "max": 1808.46484375
+      }
+    },
+    "system_load": {
+      "cpu_percent": {
+        "mean": 0.24,
+        "max": 2.4
+      },
+      "memory_percent": {
+        "mean": 31.849999999999998,
+        "max": 32.0
+      }
+    },
+    "sample_count": 10
+  }
+}
