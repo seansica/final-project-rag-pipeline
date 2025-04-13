@@ -1,0 +1,181 @@
+$ uv run python analyze_top_performers.py results/phase3_ragas_20250413_175458/results.json --visualize --output_dir results/phase3_ragas_20250413_175458/analysis_output/
+
+================================================================================
+TOP PERFORMING RAG SYSTEMS BY METRIC
+================================================================================
+
+RAGAS METRICS (higher is better):
+--------------------------------------------------
+
+RAGAS_ANSWER_ACCURACY:
+  Score: 0.3433
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-multi_query-k4
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 100
+    - Top K: nan
+    - Retriever Type: multi_query
+
+RAGAS_CONTEXT_RELEVANCE:
+  Score: 0.3333
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k12
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 100
+    - Top K: 12.0
+    - Retriever Type: similarity
+
+RAGAS_FAITHFULNESS:
+  Score: 0.4216
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k12
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 100
+    - Top K: 12.0
+    - Retriever Type: similarity
+
+RAGAS_RESPONSE_RELEVANCY:
+  Score: 0.8234
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-similarity_score_threshold-0.5
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 100
+    - Top K: 4.0
+    - Retriever Type: similarity_score_threshold
+
+TEXT COMPARISON METRICS (closer to reference length is better):
+--------------------------------------------------
+
+CHARACTER_LENGTH:
+  Original Ratio (output/reference): 0.6292
+  Closeness Score: 2.6260
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k12
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 100
+    - Top K: 12.0
+    - Retriever Type: similarity
+
+WORD_COUNT:
+  Original Ratio (output/reference): 0.6285
+  Closeness Score: 2.6213
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k12
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 100
+    - Top K: 12.0
+    - Retriever Type: similarity
+
+OVERALL TOP PERFORMER (based on average ranking across all metrics):
+--------------------------------------------------
+  Overall Score: 0.7222
+  Experiment: v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k8
+  Configuration:
+    - RAG Type: cohere
+    - Team Type: engineering
+    - Embedding Model: multi-qa-mpnet-base-cos-v1
+    - Chunk Size: 1024
+    - Chunk Overlap: 100
+    - Top K: 8.0
+    - Retriever Type: similarity
+
+Analysis saved to results/phase3_ragas_20250413_175458/analysis_output
+Visualizations saved to results/phase3_ragas_20250413_175458/analysis_output/
+
+uv run python analyze_statistical_significance.py --phase 3 --results_path results/phase3_ragas_20250413_175458
+
+=== ANOVA Results ===
+correctness: F=0.0000, p=1.0000, significant=False
+groundedness: F=0.0000, p=1.0000, significant=False
+relevance: F=0.0000, p=1.0000, significant=False
+retrieval_relevance: F=0.0000, p=1.0000, significant=False
+ragas_answer_accuracy: F=2.3261, p=0.0081, significant=True
+ragas_context_relevance: F=8.1141, p=0.0000, significant=True
+ragas_faithfulness: F=12.7211, p=0.0000, significant=True
+ragas_response_relevancy: F=1.7441, p=0.0597, significant=False
+deepeval_faithfulness: F=197.2157, p=0.0000, significant=True
+deepeval_geval: F=51.2501, p=0.0000, significant=True
+bertscore_evaluator: F=3.2644, p=0.0002, significant=True
+
+=== Top Significant Differences (by Effect Size) ===
+Metric: deepeval_faithfulness
+  v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k12 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-similarity_score_threshold-0.8
+  p-value: 0.0000, effect size: 24.09
+Metric: deepeval_faithfulness
+  v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k12 vs v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-similarity_score_threshold-0.8
+  p-value: 0.0000, effect size: 24.09
+Metric: deepeval_faithfulness
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-similarity_score_threshold-0.8 vs v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-mmr-k4
+  p-value: 0.0000, effect size: 16.88
+Metric: deepeval_faithfulness
+  v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-similarity_score_threshold-0.8 vs v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-mmr-k4
+  p-value: 0.0000, effect size: 16.88
+Metric: deepeval_faithfulness
+  v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k8 vs v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-similarity_score_threshold-0.8
+  p-value: 0.0000, effect size: 16.23
+Metric: deepeval_faithfulness
+  v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k8 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-similarity_score_threshold-0.8
+  p-value: 0.0000, effect size: 16.23
+Metric: deepeval_faithfulness
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k12 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-similarity_score_threshold-0.8
+  p-value: 0.0000, effect size: 15.07
+Metric: deepeval_faithfulness
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k12 vs v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-similarity_score_threshold-0.8
+  p-value: 0.0000, effect size: 15.07
+Metric: deepeval_faithfulness
+  v1-cohere-engineering-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-similarity_score_threshold-0.8 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-mmr-k4
+  p-value: 0.0000, effect size: 14.83
+Metric: deepeval_faithfulness
+  v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-similarity_score_threshold-0.8 vs v1-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-mmr-k4
+  p-value: 0.0000, effect size: 14.83
+
+=== Regression Analysis Results ===
+ragas_answer_accuracy: R² = 0.391, retriever_type coef = -0.0164, N/A coef = 0.0000
+ragas_context_relevance: R² = 0.431, retriever_type coef = -0.0679, N/A coef = 0.0000
+ragas_faithfulness: R² = 0.498, retriever_type coef = -0.0813, N/A coef = 0.0000
+ragas_response_relevancy: R² = 0.578, retriever_type coef = 0.0145, N/A coef = 0.0000
+deepeval_faithfulness: R² = 0.594, retriever_type coef = -0.2553, N/A coef = 0.0000
+deepeval_geval: R² = 0.368, retriever_type coef = -0.1004, N/A coef = 0.0000
+bertscore_evaluator: R² = 0.442, retriever_type coef = 0.0080, N/A coef = 0.0000
+
+General observations:
+
+Statistical Significance: 
+- Several metrics show highly significant differences by retriever method (very low p-values). In particular, ANOVA results for `ragas_answer_accuracy`, `ragas_context_relevance`, `ragas_faithfulness`, `deepeval_faithfulness`, `deepeval_geval`, and `bertscore_evaluator` are all significant (p < 0.05).  
+- A few metrics (e.g. `ragas_response_relevancy` at p ~ 0.06) are borderline or not quite significant. Others (like “correctness” or “groundedness”) are not significant at all.
+
+Effect Size and Collinearity:
+- Regression R^2 values for the significant metrics (e.g. ~0.4–0.6) suggest that the retriever method explains a meaningful portion of the variance in scores. 
+- Thus, the retriever type is a strong predictor of those evaluation metrics.
+
+Best vs. Worst Retriever Methods:
+- Overall, similarity with `top_k = 8` or `12` consistently appears among the top performers across multiple metrics.  
+- The similarity_score_threshold at 0.8 often yields zero retrievals (score = 0 for some evaluations), making it the worst-performing approach in many cases.
+
+Practical Impact:
+- Retriever method choice DOES make a large difference in the final evaluation metrics.
+- High thresholds can retrieve nothing and collapse performance. 
+- By contrast, a well-chosen top_k or a more balanced threshold can substantially improve results.
+
+Metrics to Prioritize:
+- deepeval_faithfulness stands out as extremely sensitive (p ~ 10^(-233)). It reliably distinguishes retriever effects.
+- ragas_faithfulness and ragas_context_relevance also show very strong significance (p < 10^(-13)), implying they’re informative.
+- ragas_answer_accuracy, deepeval_geval, and bertscore_evaluator similarly exhibit clear significance (p < 0.01 in each case) and offer useful signals for comparing retrievers.

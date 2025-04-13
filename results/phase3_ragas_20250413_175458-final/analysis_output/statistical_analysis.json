@@ -1,0 +1,127 @@
+{
+  "anova_results": {
+    "correctness": {
+      "f_value": 0.0,
+      "p_value": 1.0,
+      "significant": false
+    },
+    "groundedness": {
+      "f_value": 0.0,
+      "p_value": 1.0,
+      "significant": false
+    },
+    "relevance": {
+      "f_value": 0.0,
+      "p_value": 1.0,
+      "significant": false
+    },
+    "retrieval_relevance": {
+      "f_value": 0.0,
+      "p_value": 1.0,
+      "significant": false
+    },
+    "ragas_answer_accuracy": {
+      "f_value": 2.326098825861618,
+      "p_value": 0.008071247945240723,
+      "significant": true
+    },
+    "ragas_context_relevance": {
+      "f_value": 8.114147601879573,
+      "p_value": 1.1992569486381214e-13,
+      "significant": true
+    },
+    "ragas_faithfulness": {
+      "f_value": 12.721144871037268,
+      "p_value": 1.131459027176675e-22,
+      "significant": true
+    },
+    "ragas_response_relevancy": {
+      "f_value": 1.7441108914338497,
+      "p_value": 0.05965542377256241,
+      "significant": false
+    },
+    "deepeval_faithfulness": {
+      "f_value": 197.21574001179616,
+      "p_value": 1.4213640487027949e-233,
+      "significant": true
+    },
+    "deepeval_geval": {
+      "f_value": 51.25009655585154,
+      "p_value": 6.691837580357497e-88,
+      "significant": true
+    },
+    "bertscore_evaluator": {
+      "f_value": 3.264354297160289,
+      "p_value": 0.0002129401716927347,
+      "significant": true
+    }
+  },
+  "significant_tests": 136,
+  "total_tests": 462,
+  "significant_percentage": 0.2943722943722944,
+  "regression_analysis": [
+    {
+      "metric": "ragas_answer_accuracy",
+      "intercept": 0.323951048951049,
+      "primary_param_coefficient": -0.016389860139860126,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "retriever_type",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.39123203272395835
+    },
+    {
+      "metric": "ragas_context_relevance",
+      "intercept": 0.3578088578088577,
+      "primary_param_coefficient": -0.06789044289044284,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "retriever_type",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.4313186485788624
+    },
+    {
+      "metric": "ragas_faithfulness",
+      "intercept": 0.3895117508753872,
+      "primary_param_coefficient": -0.0813462631644449,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "retriever_type",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.4978570793184046
+    },
+    {
+      "metric": "ragas_response_relevancy",
+      "intercept": 0.7689153316229853,
+      "primary_param_coefficient": 0.014520270260514653,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "retriever_type",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.5783309954009577
+    },
+    {
+      "metric": "deepeval_faithfulness",
+      "intercept": 1.154085497835498,
+      "primary_param_coefficient": -0.2552794427794427,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "retriever_type",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.5942936437948589
+    },
+    {
+      "metric": "deepeval_geval",
+      "intercept": 0.5387740882132223,
+      "primary_param_coefficient": -0.10036584195714583,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "retriever_type",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.3680211112272773
+    },
+    {
+      "metric": "bertscore_evaluator",
+      "intercept": 0.8624195886693355,
+      "primary_param_coefficient": 0.00795325294727495,
+      "secondary_param_coefficient": 0.0,
+      "primary_param_name": "retriever_type",
+      "secondary_param_name": "N/A",
+      "r_squared": 0.4423565791391093
+    }
+  ]
+}
