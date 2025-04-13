@@ -3,9 +3,19 @@ import numpy as np
 from scipy import stats
 import pandas as pd
 import matplotlib.pyplot as plt
+import argparse
+import os
+
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='Analyze statistical significance of RAG experiment results')
+parser.add_argument('--results_path', type=str, default='results/phase1_ragas_20250411_174100',
+                    help='Path to the results folder (default: results/phase1_ragas_20250411_174100)')
+args = parser.parse_args()
+
+results_path = args.results_path
 
 # Load the results data
-with open('results/phase1_ragas_20250411_174100/results.json', 'r') as f:
+with open(os.path.join(results_path, 'results.json'), 'r') as f:
     results = json.load(f)
 
 # Extract metrics into a structured format
@@ -135,7 +145,11 @@ def plot_metric_comparison(metric, exp_names, means, standard_errors):
     plt.title(f'Comparison of {metric} across experiments')
     plt.ylabel(f'{metric} score')
     plt.tight_layout()
-    plt.savefig(f'results/phase1_ragas_20250411_174100/analysis_output/{metric}_comparison.png')
+    
+    # Create analysis_output directory if it doesn't exist
+    os.makedirs(os.path.join(results_path, 'analysis_output'), exist_ok=True)
+    
+    plt.savefig(os.path.join(results_path, f'analysis_output/{metric}_comparison.png'))
     plt.close()
 
 # Create metric comparison plots
@@ -185,7 +199,7 @@ for idx, row in significant_results.head(10).iterrows():
     print(f"  p-value: {row['p_value']:.4f}, effect size: {row['effect_size']:.2f}")
 
 # Save results to file
-with open('results/phase1_ragas_20250411_174100/analysis_output/statistical_analysis.json', 'w') as f:
+with open(os.path.join(results_path, 'analysis_output/statistical_analysis.json'), 'w') as f:
     json.dump({
         'anova_results': anova_results,
         'significant_tests': int(significant_count),
@@ -200,6 +214,6 @@ for col in df_results.columns:
     elif df_results[col].dtype.kind == 'b':  # boolean
         df_results[col] = df_results[col].astype(bool)
 
-significant_results.to_csv('results/phase1_ragas_20250411_174100/analysis_output/significant_differences.csv', index=False)
+significant_results.to_csv(os.path.join(results_path, 'analysis_output/significant_differences.csv'), index=False)
 
-print("\nAnalysis complete. Results saved to analysis_output directory.")
+print(f"\nAnalysis complete. Results saved to {os.path.join(results_path, 'analysis_output')} directory.")
