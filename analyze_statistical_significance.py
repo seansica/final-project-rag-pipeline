@@ -10,9 +10,28 @@ import os
 parser = argparse.ArgumentParser(description='Analyze statistical significance of RAG experiment results')
 parser.add_argument('--results_path', type=str, default='results/phase1_ragas_20250411_174100',
                     help='Path to the results folder (default: results/phase1_ragas_20250411_174100)')
+parser.add_argument('--phase', type=int, choices=[1, 2, 3], default=None,
+                    help='Experiment phase: 1=embedding models, 2=chunk size/overlap, 3=retrieval methods')
 args = parser.parse_args()
 
 results_path = args.results_path
+
+# Auto-detect phase from results path if not explicitly provided
+if args.phase is None:
+    if 'phase1' in results_path:
+        phase = 1
+    elif 'phase2' in results_path:
+        phase = 2
+    elif 'phase3' in results_path:
+        phase = 3
+    else:
+        # Default to phase 2 if can't determine
+        phase = 2
+        print(f"Could not determine phase from path '{results_path}'. Defaulting to phase 2.")
+else:
+    phase = args.phase
+
+print(f"Analyzing phase {phase} experiments from {results_path}")
 
 # Load the results data
 with open(os.path.join(results_path, 'results.json'), 'r') as f:
@@ -20,6 +39,7 @@ with open(os.path.join(results_path, 'results.json'), 'r') as f:
 
 # Extract metrics into a structured format
 experiments = []
+experiments_config = {}  # Store configs separately keyed by experiment ID
 metrics_of_interest = [
     'correctness', 'groundedness', 'relevance', 'retrieval_relevance',
     'ragas_answer_accuracy', 'ragas_context_relevance', 'ragas_faithfulness',
@@ -28,21 +48,59 @@ metrics_of_interest = [
 ]
 
 for experiment in results:
-    exp_id = experiment['experiment_id']
+    # Handle different formats of experiment ID
+    if 'experiment_id' in experiment:
+        exp_id = experiment['experiment_id']
+    elif 'id' in experiment:
+        exp_id = experiment['id']
+    else:
+        # Skip experiments with no ID
+        print(f"Warning: Skipping experiment with no ID: {experiment.keys()}")
+        continue
+    
     metrics = {}
     
-    for metric in metrics_of_interest:
-        if metric in experiment['metrics']['feedback']:
-            metrics[metric] = {
-                'mean': experiment['metrics']['feedback'][metric]['mean'],
-                'std': experiment['metrics']['feedback'][metric]['std'],
-                'count': experiment['metrics']['feedback'][metric]['count']
-            }
+    # Handle different formats of metrics structure
+    if 'metrics' in experiment and 'feedback' in experiment['metrics']:
+        metrics_source = experiment['metrics']['feedback']
+    elif 'feedback' in experiment:
+        metrics_source = experiment['feedback']
+    else:
+        # Try to find metrics at the top level
+        metrics_source = experiment
     
+    for metric in metrics_of_interest:
+        if metric in metrics_source:
+            # Make sure we have the required statistics
+            if all(k in metrics_source[metric] for k in ('mean', 'std', 'count')):
+                metrics[metric] = {
+                    'mean': metrics_source[metric]['mean'],
+                    'std': metrics_source[metric]['std'],
+                    'count': metrics_source[metric]['count']
+                }
+    
+    # Store the experiment
     experiments.append({
         'id': exp_id,
         'metrics': metrics
     })
+    
+    # Store the full config if available
+    if 'config' in experiment:
+        experiments_config[exp_id] = experiment['config']
+
+# Print experiment IDs for debugging
+print(f"\nFound {len(experiments)} experiments with {len(experiments_config)} configs")
+for i, exp in enumerate(experiments):
+    print(f"Experiment {i+1}: ID={exp['id']}")
+    if exp['id'] in experiments_config:
+        config = experiments_config[exp['id']]
+        if 'embedding_model' in config:
+            print(f"  Embedding model: {config['embedding_model']}")
+        if 'chunk_size' in config:
+            print(f"  Chunk size: {config['chunk_size']}")
+        if 'chunk_overlap' in config:
+            print(f"  Chunk overlap: {config['chunk_overlap']}")
 
 # Function to perform ANOVA test
 def perform_anova(metric_name):
@@ -140,27 +198,80 @@ exp_names = []
 exp_indices = {metric: [] for metric in metrics_of_interest}  # Track which experiments have each metric
 
 for i, exp in enumerate(experiments):
-    # Extract configuration from experiment ID
-    exp_id_parts = exp['id'].split('-')
-    # Extract relevant experiment parameters for display
-    experiment_config = None
-    # Look for results file to extract full config
-    if 'results.json' in os.listdir(results_path):
-        with open(os.path.join(results_path, 'results.json'), 'r') as f:
-            results_data = json.load(f)
-            for result in results_data:
-                if result['experiment_id'] == exp['id'] and 'config' in result:
-                    experiment_config = result['config']
-                    break
+    # Get experiment ID
+    exp_id = exp['id']
     
-    if experiment_config:
-        # Use the actual config values from the results file
-        chunk_size = experiment_config.get('chunk_size', 'N/A')
-        chunk_overlap = experiment_config.get('chunk_overlap', 'N/A')
-        display_name = f"cs{chunk_size}-co{chunk_overlap}"
+    # Get config if available from our pre-built dictionary
+    if exp_id in experiments_config:
+        config = experiments_config[exp_id]
+        
+        # Create display name based on phase
+        if phase == 1:  # Embedding model comparison
+            # For Phase 1, use the embedding model and team type
+            emb_model = config.get('embedding_model', 'unknown')
+            team_type = config.get('team_type', '')
+            
+            # Shorten long embedding model names
+            if isinstance(emb_model, str) and len(emb_model) > 12:
+                short_name = emb_model[:10] + '...'
+            else:
+                short_name = emb_model
+                
+            display_name = f"{team_type}-{short_name}"
+            
+        elif phase == 3:  # Retriever method comparison
+            # For Phase 3, use the retriever type
+            ret_type = config.get('retriever_type', 'unknown')
+            
+            # Add threshold for similarity_score_threshold
+            if ret_type == 'similarity_score_threshold' and 'retriever_kwargs' in config:
+                threshold = config['retriever_kwargs'].get('similarity_threshold', 0.0)
+                display_name = f"{ret_type}-{threshold}"
+            else:
+                display_name = ret_type
+                
+        else:  # Phase 2 (default) - chunk size and overlap
+            # For Phase 2, use chunk size and overlap
+            chunk_size = config.get('chunk_size', 'N/A')
+            chunk_overlap = config.get('chunk_overlap', 'N/A')
+            display_name = f"cs{chunk_size}-co{chunk_overlap}"
     else:
-        # Fallback to parsing from ID if config not found
-        display_name = '-'.join(exp_id_parts[-6:])
+        # Extract from ID if config not available
+        id_parts = exp_id.split('-')
+        
+        # Try to guess based on ID and phase
+        if phase == 1 and 'emb-' in exp_id:  # Embedding model
+            # Try to extract embedding model name
+            emb_idx = id_parts.index('emb') if 'emb' in id_parts else -1
+            if emb_idx >= 0 and emb_idx + 1 < len(id_parts):
+                emb_name = id_parts[emb_idx + 1]
+                display_name = f"unknown-{emb_name}"
+            else:
+                display_name = exp_id
+                
+        elif phase == 2:  # Chunk size and overlap
+            # Look for cs and co patterns
+            cs_part = next((p for p in id_parts if p.startswith('cs')), None)
+            co_part = next((p for p in id_parts if p.startswith('co')), None)
+            
+            if cs_part and co_part:
+                display_name = f"{cs_part}-{co_part}"
+            else:
+                display_name = exp_id
+                
+        elif phase == 3:  # Retriever method
+            # Look for retriever type
+            if 'mmr' in id_parts:
+                display_name = 'mmr'
+            elif 'similarity' in id_parts:
+                display_name = 'similarity'
+            else:
+                display_name = exp_id
+        else:
+            display_name = exp_id
+    
+    # Debug output to verify display names
+    print(f"Experiment {i+1}: ID={exp_id}, Display={display_name}")
     
     exp_names.append(display_name)
     
@@ -181,36 +292,107 @@ def plot_metric_comparison(metric, exp_names, means, standard_errors):
     # We need to use exp_names corresponding to the indices in exp_indices[metric]
     selected_names = [exp_names[i] for i in exp_indices[metric]]
     
-    # Extract chunk size and chunk overlap for regression analysis
-    chunk_sizes = []
-    chunk_overlaps = []
-    display_names = []  # Better formatted names for display
+    # Extract parameters for visualization and regression
+    param_values = []   # Primary parameter (embedding model, chunk size, retriever type)
+    param2_values = []  # Secondary parameter (chunk overlap for phase 2)
+    display_names = []  # Display names for the plot
     
-    for name in selected_names:
-        # Extract values from name format like "cs512-co50"
-        try:
-            cs_part = name.split('-')[0]
-            co_part = name.split('-')[1]
-            
-            # Extract numeric values
-            chunk_size = int(cs_part.replace('cs', ''))
-            chunk_overlap = int(co_part.replace('co', ''))
-            
-            chunk_sizes.append(chunk_size)
-            chunk_overlaps.append(chunk_overlap)
-            
-            # Create cleaner display name
-            display_names.append(f"CS={chunk_size}, CO={chunk_overlap}")
-        except (ValueError, IndexError):
-            # If we can't parse the values, use original name
-            chunk_sizes.append(0)
-            chunk_overlaps.append(0)
-            display_names.append(name)
+    # Get experiment IDs and experiment objects matching the selected names
+    selected_exps = [exp for exp in experiments if any(metric in exp['metrics'] for metric in metrics_of_interest)]
+    selected_ids = [exp['id'] for exp in selected_exps]
     
-    # Sort everything by chunk size for better visualization
-    sort_indices = np.argsort(chunk_sizes)
-    sorted_chunk_sizes = np.array(chunk_sizes)[sort_indices]
-    sorted_chunk_overlaps = np.array(chunk_overlaps)[sort_indices]
+    # Extract parameters based on phase
+    for i, exp_id in enumerate(selected_ids):
+        # Get config from our pre-populated dictionary
+        config = experiments_config.get(exp_id, {})
+        
+        if phase == 1:  # Embedding Model Comparison
+            # Get embedding model name (primary parameter for Phase 1)
+            emb_model = config.get('embedding_model', 'unknown')
+            team_type = config.get('team_type', '')
+            
+            # For regression analysis, we'll use a numeric index for the embedding model
+            # This is just for visualization purposes since regression on categorical variables isn't meaningful
+            if emb_model == 'multi-qa-mpnet-base-dot-v1':
+                param_index = 1
+            elif emb_model == 'all-mpnet-base-v2':
+                param_index = 2
+            elif emb_model == 'all-MiniLM-L6-v2':
+                param_index = 3
+            elif emb_model == 'all-distilroberta-v1':
+                param_index = 4
+            elif emb_model == 'multi-qa-mpnet-base-cos-v1':
+                param_index = 5
+            else:
+                param_index = 0
+                
+            param_values.append(param_index)  # Use numeric index for plotting
+            param2_values.append(0)  # No secondary parameter for Phase 1
+            
+            # Create display name for Phase 1
+            if len(emb_model) > 10:
+                short_name = emb_model[:8] + '...'
+            else:
+                short_name = emb_model
+                
+            display_name = f"{team_type}-{short_name}"
+            display_names.append(display_name)
+            
+        elif phase == 2:  # Chunk Size and Overlap Comparison
+            # Get chunk size and overlap (primary and secondary parameters for Phase 2)
+            chunk_size = config.get('chunk_size', 0)
+            chunk_overlap = config.get('chunk_overlap', 0)
+            
+            param_values.append(chunk_size)  
+            param2_values.append(chunk_overlap)
+            
+            # Create display name for Phase 2
+            display_name = f"CS={chunk_size}, CO={chunk_overlap}"
+            display_names.append(display_name)
+            
+        elif phase == 3:  # Retriever Method Comparison
+            # Get retriever type (primary parameter for Phase 3)
+            retriever_type = config.get('retriever_type', 'unknown')
+            
+            # For regression analysis, we'll use a numeric index for the retriever type
+            if retriever_type == 'similarity':
+                param_index = 1
+            elif retriever_type == 'mmr':
+                param_index = 2
+            elif 'similarity_score_threshold' in retriever_type:
+                param_index = 3
+            else:
+                param_index = 0
+                
+            param_values.append(param_index)  # Use numeric index for plotting
+            param2_values.append(0)  # No secondary parameter for Phase 3
+            
+            # Create display name for Phase 3
+            display_name = f"Retriever: {retriever_type}"
+            display_names.append(display_name)
+            
+        else:  # Fallback for unknown phase
+            param_values.append(0)
+            param2_values.append(0)
+            display_names.append(f"Unknown-{i+1}")
+    
+    # Debug the extracted parameters
+    print("\nExtracted parameters for plotting:")
+    for i, (name, param, display) in enumerate(zip(selected_names, param_values, display_names)):
+        print(f"Experiment {i+1}: ID={name}, Param={param}, Display={display}")
+        
+    # Sort based on the primary parameter type
+    if phase == 1 or phase == 3:
+        # For phase 1 and 3, we're dealing with string values (embedding models/retrieval methods)
+        # Sort alphabetically
+        sort_indices = np.argsort(display_names)
+    else:
+        # For phase 2, sort by chunk size
+        sort_indices = np.argsort(param_values)
+    
+    # Sort all arrays using the sort indices
+    sorted_param_values = np.array(param_values)[sort_indices]
+    sorted_param2_values = np.array(param2_values)[sort_indices]
     sorted_means = np.array(means)[sort_indices]
     sorted_errors = np.array(standard_errors)[sort_indices]
     sorted_display_names = np.array(display_names)[sort_indices]
@@ -224,9 +406,37 @@ def plot_metric_comparison(metric, exp_names, means, standard_errors):
     for i, (letter, config) in enumerate(zip(letter_labels, sorted_display_names)):
         exp_legend_entries.append(f"{letter}: {config}")
     
-    # Use color gradient based on chunk size for better visual correlation
-    norm = plt.Normalize(min(sorted_chunk_sizes), max(sorted_chunk_sizes))
-    colors = plt.cm.viridis(norm(sorted_chunk_sizes))
+    # Create color mapping based on the phase
+    if phase == 2:
+        # For phase 2, we use a color gradient for chunk sizes
+        if len(set(sorted_param_values)) > 1:
+            norm = plt.Normalize(min(sorted_param_values), max(sorted_param_values))
+            colors = plt.cm.viridis(norm(sorted_param_values))
+        else:
+            # If all chunk sizes are the same, use a default color
+            colors = ['steelblue'] * len(sorted_means)
+    else:
+        # For phase 1 and 3, use a categorical color map
+        # Get unique parameter values
+        unique_params = list(dict.fromkeys(sorted_param_values))
+        
+        # Create a mapping from parameter values to colors
+        color_map = {}
+        # Use pyplot's get_cmap for newer matplotlib versions
+        try:
+            # For newer matplotlib versions
+            cmap = plt.colormaps['tab10']
+        except:
+            # Fallback for older versions
+            cmap = plt.cm.get_cmap('tab10')
+            
+        # Create evenly spaced colors
+        for i, param in enumerate(unique_params):
+            color_val = i / max(1, len(unique_params) - 1)  # Normalized between 0 and 1
+            color_map[param] = cmap(color_val)
+        
+        # Create color array
+        colors = [color_map[param] for param in sorted_param_values]
 
     # Create a new figure with a gridspec layout
     # This will create a clean 2-column layout
@@ -262,35 +472,71 @@ def plot_metric_comparison(metric, exp_names, means, standard_errors):
     # Add grid for better readability
     ax_main.grid(axis='y', linestyle='--', alpha=0.7)
     
-    # Create a discrete legend for chunk sizes instead of a continuous colorbar
-    # Find unique chunk sizes
-    unique_chunk_sizes = sorted(set(sorted_chunk_sizes))
+    # Create a parameter-specific legend based on the phase
+    param_handles = []
+    param_labels = []
     
-    # Create a custom legend for chunk sizes
-    chunk_handles = []
-    chunk_labels = []
+    # Get phase-specific legend title and labels
+    if phase == 1:
+        legend_title = "Embedding Models"
+        param_name = "Embedding Model"
+    elif phase == 2:
+        legend_title = "Chunk Sizes"
+        param_name = "Chunk Size"
+    elif phase == 3:
+        legend_title = "Retrieval Methods"
+        param_name = "Retrieval Method"
+    else:
+        legend_title = "Parameters"
+        param_name = "Parameter"
     
-    for cs in unique_chunk_sizes:
-        # Get the color for this chunk size from our normalized colormap
-        color = plt.cm.viridis(norm(cs))
-        # Create a colored patch for the legend
+    # Create the parameter legend entries
+    unique_params = sorted(set(sorted_param_values))
+    
+    for param in unique_params:
+        if phase == 2:
+            # For phase 2, use the gradient color for chunk sizes
+            if len(unique_params) > 1:
+                color = plt.cm.viridis(norm(param))
+            else:
+                color = 'steelblue'
+            label = f"{param_name}: {param}"
+        else:
+            # For phase 1 and 3, use the categorical colors
+            color = color_map[param]
+            # For embedding models, create shorter label if needed
+            if phase == 1 and isinstance(param, str) and len(param) > 15:
+                label = f"{param_name}: {param[:12]}..."
+            else:
+                label = f"{param_name}: {param}"
+        
+        # Create colored patch for the legend
         patch = plt.Rectangle((0, 0), 1, 1, facecolor=color, alpha=0.7)
-        chunk_handles.append(patch)
-        chunk_labels.append(f"Chunk Size: {cs}")
+        param_handles.append(patch)
+        param_labels.append(label)
     
-    # Add the chunk size legend to the top-left corner of the main plot
-    # chunk_legend = ax_main.legend(chunk_handles, chunk_labels, 
-    #                            loc='upper left', title="Chunk Sizes", 
-    #                            framealpha=0.7)
+    # Add the parameter legend to the top-left corner of the main plot
+    param_legend = ax_main.legend(param_handles, param_labels, 
+                               loc='upper left', title=legend_title, 
+                               framealpha=0.7)
 
-    # Regression analysis
+    # Regression analysis for all phases
     has_regression = False
-    if len(means) > 1 and len(set(chunk_sizes)) > 1:
+    
+    # For Phase 1 and 3, we use numeric indices for categorical variables
+    # For Phase 2, we use actual numeric values (chunk size and overlap)
+    if len(means) > 1 and len(set(sorted_param_values)) > 1:
         # Prepare data for regression
-        X = np.array([chunk_sizes, chunk_overlaps]).T
+        if phase == 2:
+            # Use both primary and secondary parameters for Phase 2
+            X = np.array([sorted_param_values, sorted_param2_values]).T
+        else:
+            # For Phase 1 and 3, just use the primary parameter
+            X = np.array(sorted_param_values).reshape(-1, 1)
+            
         # Add constant term for intercept
         X = np.column_stack((np.ones(len(X)), X))
-        y = np.array(means)
+        y = np.array(sorted_means)
         
         # Fit regression model
         try:
@@ -304,21 +550,60 @@ def plot_metric_comparison(metric, exp_names, means, standard_errors):
             ss_residual = np.sum(resid) if resid.size > 0 else np.sum((y - np.dot(X, beta)) ** 2)
             r_squared = 1 - (ss_residual / ss_total) if ss_total != 0 else 0
             
-            # Model coefficients
-            intercept, cs_coef, co_coef = beta
+            # Model coefficients - different handling based on phase
+            if phase == 2:
+                # For Phase 2, we have intercept, chunk_size coef, and chunk_overlap coef
+                if len(beta) >= 3:
+                    intercept, cs_coef, co_coef = beta
+                else:
+                    # Handle case with fewer coefficients
+                    intercept = beta[0]
+                    cs_coef = beta[1] if len(beta) > 1 else 0
+                    co_coef = 0
+            else:
+                # For Phase 1 and 3, we just have intercept and one coefficient
+                if len(beta) >= 2:
+                    intercept, cs_coef = beta
+                    co_coef = 0  # No secondary parameter
+                else:
+                    # Fallback if beta has unexpected shape
+                    intercept = beta[0]
+                    cs_coef = 0
+                    co_coef = 0
             
             # Plot regression line
             ax_reg = ax_main.twinx().twiny()  # Create twin axes for regression
             
             # Plot regression points directly on top of the bars
-            scatter_x = sorted_chunk_sizes
-            scatter_y = [intercept + cs_coef * cs + co_coef * co 
-                       for cs, co in zip(sorted_chunk_sizes, sorted_chunk_overlaps)]
+            scatter_x = sorted_param_values
             
-            # Plot regression line as a function of chunk size
-            x_reg = np.linspace(min(sorted_chunk_sizes) * 0.9, max(sorted_chunk_sizes) * 1.1, 100)
-            mean_overlap = np.mean(sorted_chunk_overlaps)
-            y_reg = intercept + cs_coef * x_reg + co_coef * mean_overlap
+            # Calculate predicted values for each data point
+            if phase == 2:
+                # For Phase 2, use both coefficients
+                scatter_y = [intercept + cs_coef * p1 + co_coef * p2 
+                          for p1, p2 in zip(sorted_param_values, sorted_param2_values)]
+            else:
+                # For Phase 1 and 3, just use the primary coefficient
+                scatter_y = [intercept + cs_coef * p1 for p1 in sorted_param_values]
+            
+            # Plot regression line as a function of the primary parameter
+            x_min = min(sorted_param_values)
+            x_max = max(sorted_param_values)
+            if x_min == x_max:
+                # Handle case where all values are the same
+                x_reg = np.array([x_min - 0.5, x_min, x_min + 0.5])
+            else:
+                # Generate evenly spaced x values
+                x_reg = np.linspace(x_min * 0.9, x_max * 1.1, 100)
+            
+            # Calculate y values for the regression line
+            if phase == 2:
+                # For Phase 2, use average chunk overlap (secondary parameter)
+                mean_overlap = np.mean(sorted_param2_values)
+                y_reg = intercept + cs_coef * x_reg + co_coef * mean_overlap
+            else:
+                # For Phase 1 and 3, just use the primary parameter
+                y_reg = intercept + cs_coef * x_reg
             
             # Add regression line
             ax_reg.plot(x_reg, y_reg, 'r-', linewidth=3)
@@ -327,7 +612,7 @@ def plot_metric_comparison(metric, exp_names, means, standard_errors):
             # We'll add both legends at once later
             
             # Set limits and hide the ticks of the regression axis
-            ax_reg.set_xlim(min(sorted_chunk_sizes) * 0.9, max(sorted_chunk_sizes) * 1.1)
+            ax_reg.set_xlim(min(sorted_param_values) * 0.9, max(sorted_param_values) * 1.1)
             ax_reg.set_xticks([])
             ax_reg.set_yticks([])
             
@@ -341,15 +626,30 @@ def plot_metric_comparison(metric, exp_names, means, standard_errors):
                                ['Regression Line'],
                                loc='upper right', framealpha=0.7)
             
-            # Make sure both legends are visible
-            # ax_main.add_artist(chunk_legend)
+            # Make sure the parameter legend is also visible
+            ax_main.add_artist(param_legend)
             
-            # Save regression data
+            # Save regression data with phase-appropriate parameter names
+            if phase == 1:
+                primary_name = 'embedding_model'
+                secondary_name = 'N/A'
+            elif phase == 2:
+                primary_name = 'chunk_size'
+                secondary_name = 'chunk_overlap'
+            elif phase == 3:
+                primary_name = 'retriever_type'
+                secondary_name = 'N/A'
+            else:
+                primary_name = 'parameter'
+                secondary_name = 'parameter2'
+            
             regression_data = {
                 'metric': metric,
                 'intercept': float(intercept),
-                'chunk_size_coefficient': float(cs_coef),
-                'chunk_overlap_coefficient': float(co_coef),
+                'primary_param_coefficient': float(cs_coef),
+                'secondary_param_coefficient': float(co_coef),
+                'primary_param_name': primary_name,
+                'secondary_param_name': secondary_name,
                 'r_squared': float(r_squared)
             }
             
@@ -412,13 +712,23 @@ def plot_metric_comparison(metric, exp_names, means, standard_errors):
         ax_regstats = fig.add_subplot(right_gs[0, 0])
         ax_regstats.axis('off')
         
-        # Simple clean text without any overlapping elements
-        if r_squared > 0.5:  # Only show if regression is meaningful
-            info_text = (f"Regression R² = {r_squared:.2f}\n"
-                        f"CS coefficient: {cs_coef:.4f}\n"
-                        f"CO coefficient: {co_coef:.4f}")
+        # Phase-specific regression info text
+        if r_squared > 0.3:  # Only show details if regression is somewhat meaningful
+            if phase == 1:
+                info_text = (f"Regression R² = {r_squared:.2f}\n"
+                           f"Embedding Model coefficient: {cs_coef:.4f}")
+            elif phase == 2:
+                info_text = (f"Regression R² = {r_squared:.2f}\n"
+                           f"Chunk Size coefficient: {cs_coef:.4f}\n"
+                           f"Chunk Overlap coefficient: {co_coef:.4f}")
+            elif phase == 3:
+                info_text = (f"Regression R² = {r_squared:.2f}\n"
+                           f"Retriever Type coefficient: {cs_coef:.4f}")
+            else:
+                info_text = (f"Regression R² = {r_squared:.2f}\n"
+                           f"Parameter coefficient: {cs_coef:.4f}")
         else:
-            info_text = "Regression analysis shows\nweak relationship (R² < 0.5)"
+            info_text = f"Regression R² = {r_squared:.2f}\nWeak relationship"
             
         ax_regstats.text(0.5, 0.5, info_text, 
                       ha='center', va='center', fontsize=11,
@@ -497,9 +807,11 @@ print("\n=== Regression Analysis Results ===")
 for result in regression_results:
     metric = result['metric']
     r_squared = result['r_squared']
-    cs_coef = result['chunk_size_coefficient']
-    co_coef = result['chunk_overlap_coefficient']
-    print(f"{metric}: R² = {r_squared:.3f}, CS coef = {cs_coef:.4f}, CO coef = {co_coef:.4f}")
+    primary_coef = result['primary_param_coefficient']
+    secondary_coef = result['secondary_param_coefficient']
+    primary_name = result['primary_param_name']
+    secondary_name = result['secondary_param_name']
+    print(f"{metric}: R² = {r_squared:.3f}, {primary_name} coef = {primary_coef:.4f}, {secondary_name} coef = {secondary_coef:.4f}")
 
 # Save results to file
 with open(os.path.join(results_path, 'analysis_output/statistical_analysis.json'), 'w') as f:
