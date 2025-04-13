@@ -75,29 +75,37 @@ The system can answer factual questions about technical specifications, processe
 The implementation followed a phased approach to systematically explore different aspects of the RAG pipeline:
 
 ### Phase 1: Embedding Model Selection
-I tested five embedding models (all-mpnet-base-v2, all-MiniLM-L6-v2, all-distilroberta-v1, multi-qa-mpnet-base-cos-v1, multi-qa-mpnet-base-dot-v1) while keeping other parameters constant.
-This phase established the foundation for subsequent experiments by identifying the most effective semantic representation for the corpus.
+I tested five embedding models (all-mpnet-base-v2, all-MiniLM-L6-v2, all-distilroberta-v1, multi-qa-mpnet-base-cos-v1, multi-qa-mpnet-base-dot-v1) while keeping other parameters constant. This phase established the foundation for subsequent experiments by identifying the most effective semantic representation for the corpus.
 
-This embedding-first approach was deliberate as it determines how documents are represented in vector space, fundamentally constraining all downstream retrieval performance.
-Since switching embedding models requires re-embedding the entire corpus (making it computationally expensive), identifying the best model early allowed me to focus subsequent phases on parameter optimization. (Though, in reality, this last point is a bit of a principled stance given how small the RAG corpus actually was).
+This embedding-first approach was deliberate as it determines how documents are represented in vector space, fundamentally constraining all downstream retrieval performance. Since switching embedding models requires re-embedding the entire corpus (making it computationally expensive), identifying the best model early allowed me to focus subsequent phases on parameter optimization. (Though, in reality, this last point is a bit of a principled stance given how small the RAG corpus actually was).
 
 ### Phase 2: Chunking Parameter Optimization
-Using the best-performing embedding model from Phase 1, I explored variations in chunk size (256, 512, 1024, 2048) and chunk overlap (0, 50, 100) to determine the optimal document segmentation strategy.
-These parameters directly influence what information is captured in each vector, affecting both retrieval precision and the context provided to the LLM.
+Using the best-performing embedding model from Phase 1, I explored variations in chunk size (256, 512, 1024, 2048) and chunk overlap (0, 50, 100) to determine the optimal document segmentation strategy. These parameters directly influence what information is captured in each vector, affecting both retrieval precision and the context provided to the LLM.
 
 ### Phase 3: Retrieval Strategy Refinement
 With optimized embeddings and chunking in place, I experimented with advanced retrieval techniques including similarity-based retrieval with various top-k values (4, 8, 12), Maximum Marginal Relevance (MMR), and similarity score thresholding at different levels (0.5, 0.8).
 These strategies operate on the already-embedded documents and don't require reprocessing the corpus.
 
-For audience customization (i.e., engineering vs marketing), I implemented two distinct query templates:
+For audience customization (i.e., engineering vs marketing), I implemented two a query template for each team:
 
 - Engineering template: Emphasizes technical language with precise terminology, focused on accuracy and comprehensiveness
 - Marketing template: Emphasizes conversational language with simplified terminology, focused on clarity and accessibility
 
 The template selection adjusts how the system frames questions to the retrieval component, leading to different context selection and ultimately tailored responses for different audience needs.
 
+In addition, I used LangSmith to log all results. Here was the general process:
 
-# Testing and Evaluation
+Run the `run_phased_evaluations.py` script to orchestrate to evaluate all 78 questions of the validation set against any of the specified evaluation metrics.
+
+The phased evaluations script logs all runs and traces to LangSmith to make it easy to browse the results. Each question has a trace which breaks down each sub-step of the pipeline, including how long it took to retrieve documents from the vector store, which documents were retrieved, and what the final templated input was before running it through the RAG system's LLM. 
+
+The phased evaluation script also logs all runs to file, recording them in JSON files for local analysis.
+
+Next, I would analyze the phased evaluation results using another script, `analyze_top_performers.py`, which would identify the top performing RAG system configuration based on an unweighted, normalized aggregate of all relevant evaluation metrics. In the future, I would like to implement a weighting mechanism to give more preference to evaluation metrics that the researcher values more.
+
+Lastly, I would run a statistical analysis on the results using another script, `analyze_statistical_significance.py`, to ensure that the findings were significantly signifiant, and to better understand the effect size; additionally, I ran regressions to identify whether any of the independent variables were collinear with any of the evaluation metrics.
+
+## Testing and Evaluation
 
 I evaluated system performance using 13 distinct metrics across three categories:
 
@@ -112,52 +120,38 @@ These metrics were implemented manually, by me, following a tutorial from LangCh
 
 - RAGAS Metrics (Normalized LLM-as-judge):
 
-  - Faithfulness: Equivalent to Groundedness (above) but with gradation
+  - Faithfulness: Equivalent to Groundedness (above).
   - Context Relevance: Equivalent to Retrieved Relevance (above).
   - Response Relevance: Equivalent to Relevance (above).
-  - Answer Accuracy: Equivalent to Correctness (above), but with gradation.
+  - Answer Accuracy: Equivalent to Correctness (above).
 
 - Additional Metrics:
 
-  - DeepEval G-Eval: Framework using LLM-as-judge with chain-of-thought
-  - DeepEval Faithfulness: Measures hallucination in RAG systems
+  - DeepEval G-Eval: Framework using LLM-as-judge with chain-of-thought. The authors of DeepEval claim that G-Eval most versatile metric they have to offer, claiming that it is capable of evaluating almost any use case with human-like accuracy.
+  - DeepEval Faithfulness: Measures hallucination in RAG systems. Although similar to the Hallucination metric, the DeepEval Faithfulness metric is more concerned with contradictions between the actual output and retrieval context in RAG pipelines, rather than hallucination in the actual LLM itself.
   - BERTScore: Semantic similarity between response and reference
-  - Word count and character count: Heuristic length metrics
+  - Word count and character count: Heuristic length metrics comparing hte actual output to the reference output
 
-Testing was conducted on a set of 78 domain-specific questions with reference answers. Each experimental configuration processed all questions, and results were analyzed for statistical significance using ANOVA and regression analysis to determine which differences were meaningful rather than due to chance.
+Testing was conducted on a set of 78 domain-specific questions with reference answers. Each experimental configuration processed all questions, with results analyzed for statistical significance using ANOVA and regression analysis to determine which differences were meaningful rather than due to chance. For all LLM-as-judge evaluations (10 of the 13 metrics), I used GPT-4o as the judge model.
 
-I intentionally used multiple overlapping metrics to cross-validate findings. For example, both simple groundedness and RAGAS faithfulness measure the same concept but with different methodologies, providing complementary perspectives on performance. However, the Simple Metrics can largely be ignored, as they were far less robust in their evaluation strategy than their RAGAS counterparts. For example, Correctness uses an LLM-as-a-judge to produce a binary score as to whether the produced output is in agreement with the reference answer. RAGAS Answer Accuracy does the same thing, but does two independent passes through the judge, requesting each to produce a score from 0 to 2, then normalizes both, resulting in (intuitively) a more accurate score, as the former is binary, whereas the former counts in units of 0.25, resulting in more stable means across the full evaluation set. The key purpose of the simple approach was to see if comparable results could be achieved using fewer judge calls, thus resulting in financial savings. This was not the case, and I abandoned the simple metrics after phase 1.
+I intentionally used overlapping metrics to cross-validate findings. The Simple Metrics and RAGAS Metrics measure similar concepts but differ in methodology. The Simple Metrics use a single inference request per question-answer pair to produce binary scores, while RAGAS metrics typically involve at least two inference calls. For example, while Simple Correctness produces a binary score about agreement with the reference answer, RAGAS Answer Accuracy performs two independent judge passes with scores from 0 to 2, then normalizes them to produce increments of 0.25. This results in more stable means across the full evaluation set.
 
-
+The primary purpose of implementing Simple Metrics was to determine if comparable results could be achieved with fewer judge calls, potentially reducing costs. After Phase 1, I abandoned this approach as the RAGAS metrics proved more robust in their evaluation strategy, despite their higher computational expense.
 
 # Results and Findings
 
 ## Proof of Concept Functionality
-The RAG system successfully demonstrated the ability to answer domain-specific questions with high factual accuracy. Key performance characteristics include:
+Overall, the RAG system successfully demonstrated the ability to answer domain-specific questions with high factual accuracy.
 
-- Embedding Model Performance:
-  Despite testing various models, statistical analysis revealed minimal significant differences between embedding models (only about 5% of comparisons showed statistical significance). Multi-qa-mpnet-base-cos-v1 performed marginally better, but the difference was within statistical noise, suggesting embedding model selection is less critical than other parameters.
+Regarding embedding model performance, despite testing various models, statistical analysis revealed minimal significant differences between them, with only about 5% of comparisons showing statistical significance. The multi-qa-mpnet-base-cos-v1 model performed marginally better, but the difference was within statistical noise, suggesting that embedding model selection is less critical than other parameters in the overall RAG pipeline performance. 
 
-- Chunking Parameter Impact:
-  The chunk size and overlap had a substantial impact on performance metrics:
-  - Chunk size of 1024 with overlap of 100 consistently produced the best results
-  - Ragas Context Relevance showed a strong correlation ($R^2 \approx 0.70$)
-  - Ragas Faithfulness (Hallucination for RAG) showed a moderate correlation ($R^2 \approx 0.29$)
-  - Larger chunks with more overlap improved context relevance by keeping related information together
+The chunk size and overlap parameters had a substantial impact on performance metrics. A chunk size of 1024 tokens with 100 token overlap consistently produced the best results across evaluations. Ragas Context Relevance showed a strong correlation ($R^2 \approx 0.70$) to these parameters, while Ragas Faithfulness (which measures hallucination in RAG systems) showed a moderate correlation ($R^2 \approx 0.29$). The data suggested that larger chunks with more overlap improved context relevance by keeping related information together, which contributed to better overall system performance.
 
-- Retrieval Strategy Effects:
-  Retrieval method selection demonstrated the most pronounced impact on performance:
-    - Similarity with top-k=8 was the overall best performer
-    - MMR provided more diverse but sometimes less precise results
-    - Similarity score thresholding at 0.8 usually retrieved nothing, causing performance collapse
-    - DeepEval faithfulness was extremely sensitive to retriever changes
+Retrieval method selection demonstrated the most pronounced impact on performance among all tested parameters. Similarity-based retrieval with top-k=8 consistently outperformed other strategies in most metrics. Maximum Marginal Relevance (MMR) provided more diverse but sometimes less precise results, which could be beneficial depending on the specific use case. Notably, similarity score thresholding at 0.8 often retrieved nothing, causing performance collapse in those configurations. The evaluation also revealed that DeepEval faithfulness was extremely sensitive to retriever method changes, making it a particularly useful signal for optimizing RAG retrieval strategies.
 
-- Team Type Influence:
-  The engineering template consistently outperformed the marketing template across all configurations, with the largest effect size (d=0.70) observed for relevance metrics. This suggests that how questions are framed significantly impacts retrieval quality.
+The query template type showed significant influence on system performance. The engineering template consistently outperformed the marketing template across all configurations, with the largest effect size (d=0.70) observed for relevance metrics. This suggests that how questions are framed significantly impacts retrieval quality, with technically precise formulations yielding better results even when the final response might need to be adapted for non-technical audiences.
 
-- System Performance:
-  The Cohere implementation used approximately 1330 MB of memory with response times averaging 2-5 seconds. Non-LLM components (vector retrieval) completed in about 0.25 seconds, indicating that most latency came from the LLM generation phase rather than retrieval operations.
-
+In terms of system performance metrics, the Cohere implementation used approximately 1330 MB of memory with response times averaging 2-5 seconds. The non-LLM components (specifically vector retrieval) completed in about 0.25 seconds, indicating that most latency came from the LLM generation phase rather than retrieval operations. This insight suggests that optimization efforts for production systems should focus primarily on generation efficiency rather than retrieval speed.
 
 # Lessons Learned
 
