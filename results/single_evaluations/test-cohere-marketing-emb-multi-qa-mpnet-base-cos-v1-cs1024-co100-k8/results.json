@@ -1,0 +1,120 @@
+{
+  "experiment_id": "test-cohere-marketing-emb-multi-qa-mpnet-base-cos-v1-cs1024-co100-k8",
+  "config": {
+    "rag_type": "cohere",
+    "team_type": "marketing",
+    "embedding_model": "multi-qa-mpnet-base-cos-v1",
+    "chunk_size": 1024,
+    "chunk_overlap": 100,
+    "top_k": 8,
+    "retriever_type": "similarity",
+    "retriever_kwargs": {
+      "k": 8
+    },
+    "test_set": true,
+    "data_type": "test"
+  },
+  "success": true,
+  "elapsed_time": 608.1200292110443,
+  "evaluation_type": "original",
+  "metrics": {
+    "feedback": {
+      "ragas_faithfulness": {
+        "mean": 0.3463492063492063,
+        "median": 0.26666666666666666,
+        "std": 0.38635067477915946,
+        "min": 0.0,
+        "max": 1.0,
+        "count": 30
+      },
+      "ragas_context_relevance": {
+        "mean": 0.43333333333333335,
+        "median": 0.25,
+        "std": 0.4497764451088036,
+        "min": 0.0,
+        "max": 1.0,
+        "count": 30
+      },
+      "ragas_response_relevancy": {
+        "mean": 0.7766565613562995,
+        "median": 0.8185807354333807,
+        "std": 0.1694525831884839,
+        "min": 0.20179960952242446,
+        "max": 0.9878653068191051,
+        "count": 30
+      },
+      "deepeval_geval": {
+        "mean": 0.5502513920196533,
+        "median": 0.6115838175515982,
+        "std": 0.329931121540019,
+        "min": 0.0029312232023305635,
+        "max": 0.9705007311413605,
+        "count": 30
+      },
+      "deepeval_faithfulness": {
+        "mean": 0.9600000000000001,
+        "median": 1.0,
+        "std": 0.1302517456365914,
+        "min": 0.5,
+        "max": 1.0,
+        "count": 30
+      }
+    },
+    "text_comparison": {}
+  },
+  "performance": {
+    "timing": {
+      "query_time": {
+        "mean": 0.018827517827351887,
+        "median": 0.0158998966217041,
+        "min": 0.014946699142456055,
+        "max": 0.08907151222229004,
+        "std": 0.013562009653683649,
+        "p90": 0.01887059211730957,
+        "p95": 0.030597448348999023,
+        "total": 0.5648255348205566
+      },
+      "response_time": {
+        "mean": 0.5617868979771932,
+        "median": 0.5075714588165283,
+        "min": 0.3227665424346924,
+        "max": 1.232816219329834,
+        "std": 0.19692400007818348,
+        "p90": 0.8982763290405273,
+        "p95": 1.1025216579437256,
+        "total": 16.853606939315796
+      },
+      "total_time": {
+        "mean": 0.5806144158045451,
+        "median": 0.5227428674697876,
+        "min": 0.33771324157714844,
+        "max": 1.249023199081421,
+        "std": 0.20166220764532636,
+        "p90": 0.9873478412628174,
+        "p95": 1.1175713539123535,
+        "total": 17.418432474136353
+      }
+    },
+    "memory": {
+      "rss_change": {
+        "mean": 1.9819010416666667,
+        "max": 5.4609375
+      },
+      "final_rss": {
+        "mean": 1580.7596354166667,
+        "max": 1621.578125
+      }
+    },
+    "system_load": {
+      "cpu_percent": {
+        "mean": 4.096666666666667,
+        "max": 100.0
+      },
+      "memory_percent": {
+        "mean": 17.776666666666667,
+        "max": 26.9
+      }
+    },
+    "sample_count": 30
+  }
+}
