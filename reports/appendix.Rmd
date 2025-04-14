@@ -75,18 +75,9 @@ Still seeking more reliable evaluation signals, I explored additional evaluation
 
 ## Extended Results and Findings
 
-### Detailed Performance Analysis
-Overall, the RAG system successfully demonstrated the ability to answer domain-specific questions with high factual accuracy.
+### Additional Statistical Insights
+The following visualizations present additional statistical insights not covered in the main report:
 
-Regarding embedding model performance, despite testing various models, statistical analysis revealed minimal significant differences between them, with only about 5% of comparisons showing statistical significance. The multi-qa-mpnet-base-cos-v1 model performed marginally better, but the difference was within statistical noise, suggesting that embedding model selection is less critical than other parameters in the overall RAG pipeline performance. Regardless, the variation in evaluation scores across the five embedding models were minuscule, with the regression test indicating a nonexistent relationship between the independent variable (the embedding model) and evaluation outcomes.
-
-The chunk size and overlap parameters had a substantial impact on performance metrics. A chunk size of 1024 tokens with 100 token overlap consistently produced the best results across evaluations. ragas_faithfulness, DeepEval Faithfulness, G-Eval, and BERTScore all had p-values below 0.05 in the ANOVA, implying real differences among experiments. Also, the data suggested that larger chunks with more overlap improved context relevance by keeping related information together, which contributed to better overall system performance. The rest of the metrics appear to depend more on other factors beyond chunk size/overlap (i.e., most of the metrics are unexplained by the phase 2 independent variables).
-
-Retrieval method selection demonstrated the most pronounced impact on performance among all tested parameters. Similarity-based retrieval with top-k=8 consistently outperformed other strategies in most metrics. Maximum Marginal Relevance (MMR) provided more diverse but sometimes less precise results, which could be beneficial depending on the specific use case. Notably, similarity score thresholding at 0.8 often retrieved nothing, causing performance collapse in those configurations. The evaluation also revealed that DeepEval faithfulness was extremely sensitive to retriever method changes, making it a particularly useful signal for optimizing RAG retrieval strategies.
-
-The generator template type showed significant influence on system performance. The engineering template consistently outperformed the marketing template across all configurations, with the largest effect size (d=0.70) observed for relevance metrics. This suggests that how questions are framed significantly impacts retrieval quality, with technically precise formulations yielding better results even when the final response might need to be adapted for non-technical audiences.
-
-In terms of system performance metrics, the Cohere implementation used approximately 1330 MB of memory with response times averaging 2-5 seconds. The non-LLM components (specifically vector retrieval) completed in about 0.25 seconds, indicating that most latency came from the LLM generation phase rather than retrieval operations. This insight suggests that optimization efforts for production systems should focus primarily on generation efficiency rather than retrieval speed.
 
 ## Extended Challenges and Limitations
 
