@@ -21,9 +21,7 @@ All code and experimental results can be found on GitHub [here](https://github.c
 
 # Introduction
 
-Retrieval-Augmented Generation (RAG) has emerged as a powerful approach for enhancing large language model (LLM) responses with relevant external knowledge. By combining the strengths of retrieval systems with generative capabilities, RAG addresses hallucination issues and improves factual accuracy in model outputs. However, systematically evaluating the impact of various configuration choices on RAG performance is still very challenging. This project implemented a RAG system designed to answer domain-specific questions across engineering and marketing contexts. The system ingests technical documentation, processes it into retrievable chunks, and leverages state-of-the-art embedding models and retrieval strategies to provide accurate, contextually relevant answers.
-
-One of the main features of this implementation is its ability to customize responses for different audiences through specialized query templates. The inputs consist of domain-specific documentation split into chunks and stored in a vector database. The system can answer factual questions about technical specifications, processes, and concepts contained within the corpus.
+This project implemented a RAG system to enhance LLM responses with external knowledge, addressing hallucination issues and improving factual accuracy for domain-specific Q&A. The system ingests technical documentation, processes it into retrievable chunks, and leverages embedding models and retrieval strategies to provide contextually relevant answers. A key feature is its ability to customize responses for different audiences (engineering vs. marketing) through specialized query templates.
 
 # Key Findings
 
