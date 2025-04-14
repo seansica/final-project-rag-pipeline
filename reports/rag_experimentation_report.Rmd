@@ -55,11 +55,11 @@ All experiments were executed on an Amazon EC2 instance (g4dn.xlarge) featuring 
 
 ## Evaluation Process
 
-I designed the evaluation process to ensure reproducibility and enable in-depth analysis. Initially, the `run_phased_evaluations.py` script processes the evaluation questions and logs all details, including details about each sub-step of the pipeline, to LangSmith. To enable offline analysis, the results are also saved locally.
+The evaluation process was designed to ensure reproducibility and enable in-depth analysis. First, evaluation questions were processed and all details were logged to LangSmith, with results also saved locally for offline analysis. 
 
-After data logging, the evaluation metrics for each configuration are aggregated into an unweighted, normalized composite score using the `analyze_top_performers.py` script. This approach facilitates a clear ranking of the various RAG system configurations to help identify the best performing configuration. Future iterations of the study may explore incorporating weighting mechanisms to prioritize the most critical metrics.
+Next, evaluation metrics for each configuration were aggregated into an unweighted, normalized composite score to rank RAG system configurations and identify top performers. (Future iterations could incorporate weighting mechanisms to prioritize critical metrics).
 
-The final step involves confirming statistical significance using the `analyze_statistical_significance.py` script, which conducted both ANOVA and regression analyses to uncover correlations between configuration choices and performance outcomes. A comparative analysis between the Cohere and Mistral models further demonstrated that, despite potential network latency, Cohere delivered notably higher quality outputs and faster responses—Mistral often required upwards of 25 seconds per request due to challenges like 4-bit quantization. Consequently, Cohere was selected as the sole generator for the RAG pipeline.
+Finally, statistical significance was confirmed through ANOVA and regression analyses to identify correlations between configuration choices and performance outcomes. Comparative analysis between Cohere and Mistral models showed that, despite potential network latency, Cohere delivered higher quality outputs and faster responses—Mistral required ~25 seconds per request versus Cohere's 2-3 seconds—leading to Cohere's selection as the sole generator.
 
 ## Testing and Evaluation
 
