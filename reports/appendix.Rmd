@@ -113,3 +113,13 @@ With additional time and resources, several promising directions could be explor
 - Prompt Engineering Optimization: Systematic evaluation of different prompt structures for both retrieval and generation could further enhance performance.
 - Cross-Domain Testing: Evaluating the best configurations on different document types and domains would test the generalizability of findings.
 - LLM Comparison: Comparing performance across different foundation models (e.g., Mistral, Claude, GPT-4) would help isolate the effects of the retrieval component versus the LLM capabilities. This could be done by expanding the range of acceptable generator models, and by exploring the relationship between generator LLMs and evaluator LLMs to the presence of bias penalties implicit to the evaluator LLM.
+
+## Statistical Analyses
+
+![Phase 1 Overall Rankings](../results/phase1_ragas_20250411_174100-final/analysis_output/overall_ranking.png)
+![Phase 2 Overall Rankings](../results/phase2_ragas_20250412_144026-final/analysis_output/overall_ranking.png)
+![Phase 3 Overall Rankings](../results/phase3_ragas_20250413_175458-final/analysis_output/overall_ranking.png)
+![Phase 1 G-Eval Comparison](../results/phase1_ragas_20250411_174100-final/analysis_output/deepeval_geval_comparison.png)
+![Phase 2 G-Eval Comparison](../results/phase2_ragas_20250412_144026-final/analysis_output/deepeval_geval_comparison.png)
+![Phase 3 G-Eval Comparison](../results/phase3_ragas_20250413_175458-final/analysis_output/deepeval_geval_comparison.png)
+![Phase 3 Top Performer](../results/phase3_ragas_20250413_175458-final/analysis_output/top_performer_radar.png)
