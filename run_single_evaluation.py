@@ -492,19 +492,15 @@ def main():
         # For test set, we can only use evaluators that don't require reference answers or contexts
         if test_set:
             logger.info(
-                "Test set detected - using only evaluators that don't rely on reference answers or contexts"
+                "Test set detected - using only evaluators that don't rely on reference answers"
             )
             evaluators = [
-                # correctness,
-                ragas_answer_accuracy,
-                # relevance
+                ragas_faithfulness,
+                ragas_context_relevance,
                 ragas_response_relevancy,
+                deepeval_geval,
+                deepeval_faithfulness
             ]
-
-            # Add DeepEval G-Eval if available (doesn't require references)
-            if args.deepeval and DEEPEVAL_AVAILABLE and os.getenv("OPENAI_API_KEY"):
-                logger.info("Adding DeepEval G-Eval evaluator for test set")
-                evaluators.append(deepeval_geval)
 
         else:
             # Regular validation set evaluation with all applicable evaluators
