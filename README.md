@@ -1,4 +1,4 @@
-# W267 Final Project: RAG Pipeline
+# Final Project: RAG Pipeline
 
 A comprehensive Retrieval Augmented Generation (RAG) evaluation system built with LangChain, LangSmith, and Qdrant. This project provides a systematic way to optimize RAG systems through a phased evaluation approach.
 
@@ -34,7 +34,7 @@ Create a `.env` file in the root directory with your API keys:
 COHERE_API_KEY_PROD=your_cohere_api_key
 LANGCHAIN_API_KEY=your_langsmith_api_key
 LANGCHAIN_PROJECT=your_langsmith_project
-OPENAI_API_KEY=your_openai_api_key  # For RAGAS evaluations
+OPENAI_API_KEY=your_openai_api_key  # For evaluations
 ```
 
 ## Guides
