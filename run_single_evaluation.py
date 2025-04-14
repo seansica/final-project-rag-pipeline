@@ -2,11 +2,17 @@
 """
 Wrapper script to run a single RAG evaluation with specific parameters.
 Usage: 
-  Standard evaluation:
-  python run_single_evaluation.py cohere engineering 4 templates/engineering_template.txt templates/marketing_template.txt multi-qa-mpnet-base-dot-v1 128 0
+  Single template for both engineering and marketing:
+  python run_single_evaluation.py cohere engineering 4 multi-qa-mpnet-base-dot-v1 128 0 --template templates/engineering_template.txt
+  
+  Different templates for engineering and marketing:
+  python run_single_evaluation.py cohere engineering 4 multi-qa-mpnet-base-dot-v1 128 0 --eng_template templates/engineering_template.txt --mkt_template templates/marketing_template.txt
+  
+  Test set evaluation:
+  python run_single_evaluation.py cohere engineering 4 multi-qa-mpnet-base-dot-v1 128 0 --template templates/engineering_template.txt --test_set
   
   Ragas evaluation:
-  python run_single_evaluation.py cohere engineering 4 templates/engineering_template.txt templates/marketing_template.txt multi-qa-mpnet-base-dot-v1 128 0 --ragas
+  python run_single_evaluation.py cohere engineering 4 multi-qa-mpnet-base-dot-v1 128 0 --template templates/engineering_template.txt --ragas
 """
 import sys
 import re
@@ -83,12 +89,15 @@ def main():
     parser.add_argument("rag_type", choices=["cohere", "mistral"], help="RAG system type ('cohere' or 'mistral')")
     parser.add_argument("team_type", choices=["engineering", "marketing"], help="Team type ('engineering' or 'marketing')")
     parser.add_argument("top_k", type=int, help="Number of documents to retrieve")
-    parser.add_argument("template", help="Path to template file (for test set, only one template is needed)")
     parser.add_argument("embedding_model", help="Embedding model name")
     parser.add_argument("chunk_size", type=int, help="Chunk size for text splitting")
     parser.add_argument("chunk_overlap", type=int, help="Chunk overlap for text splitting")
-    # Optional second template for validation set with different engineering/marketing answers
-    parser.add_argument("--second_template", help="Path to second template (for validation set with different answer types)")
+    
+    # Template arguments - at least one is required
+    template_group = parser.add_mutually_exclusive_group(required=True)
+    template_group.add_argument("--template", help="Path to template file (primary template, used for both audiences if single template is needed)")
+    template_group.add_argument("--eng_template", help="Path to engineering template (requires --mkt_template)")
+    parser.add_argument("--mkt_template", help="Path to marketing template (used with --eng_template)")
     parser.add_argument("--ragas", action="store_true", help="Use Ragas evaluations (answer_accuracy, context_relevance, faithfulness, response_relevancy)")
     parser.add_argument("--deepeval", action="store_true", help="Use DeepEval evaluations (faithfulness, geval) - requires OpenAI API key") 
     parser.add_argument("--bertscore", action="store_true", help="Use BERTScore evaluation to measure semantic similarity with reference answers")
@@ -109,25 +118,36 @@ def main():
     rag_type = args.rag_type
     team_type = args.team_type
     top_k = args.top_k
-    template = args.template
     embedding_model_name = args.embedding_model
     chunk_size = args.chunk_size
     chunk_overlap = args.chunk_overlap
     
-    # Set up templates based on whether we're using test set and whether a second template is provided
-    if test_set:
-        # For test set, use the same template for both engineering and marketing
-        engineering_template = template
-        marketing_template = template
-        logger.info(f"Using single template for both engineering and marketing: {template}")
-    else:
-        # For validation set, use the second template if provided
-        engineering_template = template
-        marketing_template = args.second_template if args.second_template else template
-        if args.second_template:
-            logger.info(f"Using different templates: engineering={template}, marketing={marketing_template}")
-        else:
-            logger.info(f"Using same template for both engineering and marketing: {template}")
+    # Set up templates based on provided arguments
+    if args.template:
+        # Single template mode - use the same template for both
+        engineering_template = args.template
+        marketing_template = args.template
+        logger.info(f"Using single template for both engineering and marketing: {args.template}")
+    elif args.eng_template:
+        # Separate templates mode
+        engineering_template = args.eng_template
+        
+        # Marketing template is required when eng_template is used
+        if not args.mkt_template:
+            logger.error("--mkt_template is required when using --eng_template")
+            return 1
+            
+        marketing_template = args.mkt_template
+        logger.info(f"Using different templates: engineering={engineering_template}, marketing={marketing_template}")
+    
+    # Verify that template files exist
+    if not os.path.exists(engineering_template):
+        logger.error(f"Engineering template file does not exist: {engineering_template}")
+        return 1
+        
+    if not os.path.exists(marketing_template):
+        logger.error(f"Marketing template file does not exist: {marketing_template}")
+        return 1
     use_ragas = args.ragas
     retriever_type = args.retriever_type
     retriever_kwargs = json.loads(args.retriever_kwargs) if args.retriever_kwargs else {}
