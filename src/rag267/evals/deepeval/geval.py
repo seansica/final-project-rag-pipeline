@@ -173,8 +173,6 @@ def deepeval_geval(run: Run, example: Example) -> float:
                 ],
                 evaluation_params=evaluation_params,
                 threshold=0.7,
-                model="gpt-4",  # Using GPT-4 for more accurate evaluation
-                include_reason=True
             )
         
         # Measure quality using GEval
