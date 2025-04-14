@@ -83,11 +83,12 @@ def main():
     parser.add_argument("rag_type", choices=["cohere", "mistral"], help="RAG system type ('cohere' or 'mistral')")
     parser.add_argument("team_type", choices=["engineering", "marketing"], help="Team type ('engineering' or 'marketing')")
     parser.add_argument("top_k", type=int, help="Number of documents to retrieve")
-    parser.add_argument("eng_template", help="Path to engineering template")
-    parser.add_argument("mkt_template", help="Path to marketing template")
+    parser.add_argument("template", help="Path to template file (for test set, only one template is needed)")
     parser.add_argument("embedding_model", help="Embedding model name")
     parser.add_argument("chunk_size", type=int, help="Chunk size for text splitting")
     parser.add_argument("chunk_overlap", type=int, help="Chunk overlap for text splitting")
+    # Optional second template for validation set with different engineering/marketing answers
+    parser.add_argument("--second_template", help="Path to second template (for validation set with different answer types)")
     parser.add_argument("--ragas", action="store_true", help="Use Ragas evaluations (answer_accuracy, context_relevance, faithfulness, response_relevancy)")
     parser.add_argument("--deepeval", action="store_true", help="Use DeepEval evaluations (faithfulness, geval) - requires OpenAI API key") 
     parser.add_argument("--bertscore", action="store_true", help="Use BERTScore evaluation to measure semantic similarity with reference answers")
@@ -97,25 +98,57 @@ def main():
     parser.add_argument("--retriever_kwargs", type=str, help="JSON string of retriever kwargs (e.g. '{\"score_threshold\": 0.8}')")
     parser.add_argument("--limit", type=int, default=78, help="Limit the number of questions used in evaluation (default: 78)")
     parser.add_argument("--output_dir", type=str, help="Directory to save outputs (default: results/single_evaluations)")
-    
+    parser.add_argument(
+        "--test_set",
+        action="store_true",
+        help="Use test questions instead of validation questions (no reference answers)",
+    )
+
     args = parser.parse_args()
-    
+
     rag_type = args.rag_type
     team_type = args.team_type
     top_k = args.top_k
-    engineering_template = args.eng_template
-    marketing_template = args.mkt_template
+    template = args.template
     embedding_model_name = args.embedding_model
     chunk_size = args.chunk_size
     chunk_overlap = args.chunk_overlap
+    
+    # Set up templates based on whether we're using test set and whether a second template is provided
+    if test_set:
+        # For test set, use the same template for both engineering and marketing
+        engineering_template = template
+        marketing_template = template
+        logger.info(f"Using single template for both engineering and marketing: {template}")
+    else:
+        # For validation set, use the second template if provided
+        engineering_template = template
+        marketing_template = args.second_template if args.second_template else template
+        if args.second_template:
+            logger.info(f"Using different templates: engineering={template}, marketing={marketing_template}")
+        else:
+            logger.info(f"Using same template for both engineering and marketing: {template}")
     use_ragas = args.ragas
     retriever_type = args.retriever_type
     retriever_kwargs = json.loads(args.retriever_kwargs) if args.retriever_kwargs else {}
     limit = args.limit
-    
+    test_set = args.test_set
+
     # Set up output directory
     output_dir = args.output_dir or "results/single_evaluations"
     os.makedirs(output_dir, exist_ok=True)
+
+    # Log test set usage
+    if test_set:
+        logger.info("Using TEST SET for evaluation - no reference answers available")
+        logger.info(
+            "Note: Some evaluators that require reference answers will be disabled"
+        )
+        # Warning if user tries to use reference-based evaluators with test set
+        if args.ragas or args.bertscore:
+            logger.warning(
+                "RAGAS and BERTScore evaluators require reference answers and will be disabled for test set"
+            )
 
     # Get API keys
     cohere_api_key = os.getenv("COHERE_API_KEY_PROD")
@@ -124,7 +157,7 @@ def main():
         sys.exit(1)
 
     logger.info(f"Initializing vector database with {embedding_model_name}, chunk_size={chunk_size}, chunk_overlap={chunk_overlap}")
-    
+
     # Initialize vector database manager
     vdm = VectorDatabaseManager(
         embedding_model_name=embedding_model_name,
@@ -134,21 +167,21 @@ def main():
         in_memory=True,
         force_recreate=True,
     )
-    
+
     # Hydrate vector database with data sources from data_sources.py
     logger.info(f"Hydrating vector database with {len(data_sources)} data sources")
     vdm.hydrate(data_sources)
 
     logger.info(f"Initializing RAG system with {rag_type} model")
-    
+
     # Initialize RAG system
     use_cohere = rag_type == "cohere"
     use_mistral = rag_type == "mistral"
-    
+
     logger.info(f"Initializing RAG system with: {retriever_type} retriever, top_k={top_k}")
     if retriever_kwargs:
         logger.info(f"Retriever kwargs: {retriever_kwargs}")
-    
+
     rag_system = RAGSystem(
         vector_db_manager=vdm,
         engineering_template_path=engineering_template,
@@ -162,35 +195,70 @@ def main():
         retriever_kwargs=retriever_kwargs,
     )
 
-    # Load validation data and prepare examples
-    logger.info("Loading validation data")
-    validation_file = os.path.join("data", "validation_question_answers.json")
-    with open(validation_file, "r") as f:
-        validation_question_answers = json.load(f)
-
-    # Transform the data into LangSmith compatible examples
+    # Load data and prepare examples
     examples_engineering = []
     examples_marketing = []
 
-    # Apply limit to the validation data
-    counter = 0
-    for sample in validation_question_answers.values():
-        if counter >= limit:
-            break
-            
-        examples_engineering.append({
-            "inputs": {"question": sample["question"]},
-            "outputs": {"answer": sample["gold_answer_research"]}
-        })
+    if test_set:
+        # Load test data (no reference answers)
+        logger.info("Loading test data")
+        test_file = os.path.join("data", "test_questions.json")
+        with open(test_file, "r") as f:
+            test_questions = json.load(f)
 
-        examples_marketing.append({
-            "inputs": {"question": sample["question"]},
-            "outputs": {"answer": sample["gold_answer_marketing"]}
-        })
+        # For test set, we only need one set of examples since there's no separate reference answers
+        examples_set = []
         
-        counter += 1
-        
-    logger.info(f"Loaded {counter} validation questions (limit={limit})")
+        # Transform the data into LangSmith compatible examples
+        counter = 0
+        for sample in test_questions.values():
+            if counter >= limit:
+                break
+
+            examples_set.append(
+                {
+                    "inputs": {"question": sample["question"]},
+                    # No reference answer for test data
+                }
+            )
+
+            counter += 1
+            
+        # Use the same set of examples for both engineering and marketing
+        examples_engineering = examples_set
+        examples_marketing = examples_set
+
+        logger.info(f"Loaded {counter} test questions (limit={limit})")
+    else:
+        # Load validation data with reference answers
+        logger.info("Loading validation data")
+        validation_file = os.path.join("data", "validation_question_answers.json")
+        with open(validation_file, "r") as f:
+            validation_question_answers = json.load(f)
+
+        # Transform the data into LangSmith compatible examples
+        counter = 0
+        for sample in validation_question_answers.values():
+            if counter >= limit:
+                break
+
+            examples_engineering.append(
+                {
+                    "inputs": {"question": sample["question"]},
+                    "outputs": {"answer": sample["gold_answer_research"]},
+                }
+            )
+
+            examples_marketing.append(
+                {
+                    "inputs": {"question": sample["question"]},
+                    "outputs": {"answer": sample["gold_answer_marketing"]},
+                }
+            )
+
+            counter += 1
+
+        logger.info(f"Loaded {counter} validation questions (limit={limit})")
 
     # Function to get or create dataset
     def get_or_create_dataset(client, dataset_name, examples):
@@ -205,27 +273,33 @@ def main():
 
     # Set up evaluation components
     team = Team.Engineering if team_type == "engineering" else Team.Marketing
-    dataset_name = f"w267-rag-validation-{team_type}"
-    
+
+    # Set dataset name based on test or validation
+    data_type = "test" if test_set else "validation"
+    dataset_name = f"w267-rag-{data_type}-{team_type}"
+
     # If using a limit, append it to the dataset name
     if limit < 78:
         dataset_name = f"{dataset_name}-limit{limit}"
-        
+
     examples = examples_engineering if team_type == "engineering" else examples_marketing
-    
+
     # Create a unique experiment prefix from all parameters
-    experiment_prefix = (f"rag-{rag_type}-{team_type}-"
-                        f"emb-{embedding_model_name.split('/')[-1]}-"
-                        f"cs{chunk_size}-co{chunk_overlap}-"
-                        f"k{top_k}")
-                        
+    data_prefix = "test" if test_set else "rag"
+    experiment_prefix = (
+        f"{data_prefix}-{rag_type}-{team_type}-"
+        f"emb-{embedding_model_name.split('/')[-1]}-"
+        f"cs{chunk_size}-co{chunk_overlap}-"
+        f"k{top_k}"
+    )
+
     # Add retriever info if not using default similarity
     if retriever_type != "similarity":
         retriever_extra = f"-{retriever_type}"
         if "score_threshold" in retriever_kwargs:
             retriever_extra += f"-{retriever_kwargs['score_threshold']}"
         experiment_prefix += retriever_extra
-    
+
     # No longer modifying prefix based on evaluation type
 
     logger.info(f"Experiment ID: {experiment_prefix}")
@@ -238,26 +312,26 @@ def main():
             "rss": memory_info.rss / (1024 * 1024),  # RSS in MB
             "vms": memory_info.vms / (1024 * 1024),  # VMS in MB
         }
-    
+
     # Function to measure system load including GPU if available
     def get_system_load():
         cpu_percent = psutil.cpu_percent(interval=0.1)
         memory_percent = psutil.virtual_memory().percent
-        
+
         # Initialize GPU metrics
         gpu_metrics = {"available": False}
-        
+
         # Try to get GPU metrics using GPUtil if available
         if GPUTIL_AVAILABLE:
             try:
                 # Get list of all GPUs
                 gpus = GPUtil.getGPUs()
-                
+
                 if gpus:
                     gpu_metrics["available"] = True
                     gpu_metrics["device_count"] = len(gpus)
                     gpu_metrics["devices"] = []
-                    
+
                     for gpu in gpus:
                         gpu_metrics["devices"].append({
                             "id": gpu.id,
@@ -268,20 +342,20 @@ def main():
                             "memory_percent": gpu.memoryUtil * 100,  # Convert to percentage
                             "temperature": gpu.temperature
                         })
-                    
+
                     # Log GPU utilization
                     logger.info(f"GPU Utilization: {GPUtil.showUtilization()}")
             except Exception as e:
                 logger.warning(f"Error getting GPU metrics with GPUtil: {e}")
                 gpu_metrics["error"] = str(e)
-        
+
         # Fallback to PyTorch metrics if GPUtil not available but CUDA is
         elif torch.cuda.is_available():
             try:
                 gpu_metrics["available"] = True
                 gpu_metrics["device_count"] = torch.cuda.device_count()
                 gpu_metrics["current_device"] = torch.cuda.current_device()
-                
+
                 # Get memory stats for each GPU
                 gpu_metrics["devices"] = []
                 for i in range(torch.cuda.device_count()):
@@ -289,10 +363,10 @@ def main():
                     allocated = torch.cuda.memory_allocated(i) / (1024 * 1024)
                     reserved = torch.cuda.memory_reserved(i) / (1024 * 1024)
                     max_memory = torch.cuda.get_device_properties(i).total_memory / (1024 * 1024)
-                    
+
                     # Calculate utilization percentage
                     memory_pct = (allocated / max_memory) * 100 if max_memory > 0 else 0
-                    
+
                     gpu_metrics["devices"].append({
                         "id": i,
                         "name": torch.cuda.get_device_name(i),
@@ -304,49 +378,49 @@ def main():
             except Exception as e:
                 logger.warning(f"Error getting GPU metrics with PyTorch: {e}")
                 gpu_metrics["error"] = str(e)
-        
+
         return {
             "cpu_percent": cpu_percent,
             "memory_percent": memory_percent,
             "gpu": gpu_metrics
         }
-    
+
     # Lists to track performance metrics
     query_times = []
     response_times = []
     total_times = []
     memory_usages = []
     system_loads = []
-        
+
     # Define target function with performance tracking
     def target(inputs: dict) -> dict:
         question = inputs["question"]
         logger.info(f"Processing question: {question[:50]}...")
-        
+
         # Measure memory and system load before processing
         pre_memory = get_memory_usage()
         pre_load = get_system_load()
-        
+
         # Measure vector store query time
         query_start = time.time()
         retrieved_docs = rag_system.query_vectorstore(question)
         query_time = time.time() - query_start
         query_times.append(query_time)
-        
+
         # Measure response generation time
         response_start = time.time()
         answer = rag_system.invoke(team, question)
         response_time = time.time() - response_start
         response_times.append(response_time)
-        
+
         # Measure total time and memory usage after processing
         total_time = query_time + response_time
         total_times.append(total_time)
-        
+
         # Measure memory and system load after processing
         post_memory = get_memory_usage()
         post_load = get_system_load()
-        
+
         # Track memory change and system load
         memory_change = {
             "rss_change": post_memory["rss"] - pre_memory["rss"],
@@ -355,16 +429,16 @@ def main():
             "final_vms": post_memory["vms"]
         }
         memory_usages.append(memory_change)
-        
+
         system_load = {
             "cpu_percent": post_load["cpu_percent"],
             "memory_percent": post_load["memory_percent"]
         }
         system_loads.append(system_load)
-        
+
         logger.info(f"Query time: {query_time:.2f}s, Response time: {response_time:.2f}s, Total: {total_time:.2f}s")
         logger.info(f"Memory: {post_memory['rss']:.1f}MB, CPU: {post_load['cpu_percent']:.1f}%")
-        
+
         return {
             "answer": answer,
             "documents": retrieved_docs,
@@ -390,58 +464,72 @@ def main():
 
     logger.info(f"Starting evaluation: {experiment_prefix}")
     start_time = time.time()
-    
+
     try:
         # Build list of evaluators based on the flags - can include multiple types
         evaluators = []
-        
-        # Add standard evaluators - use by default if nothing else is specified or if explicitly requested
-        if args.standard or (not args.ragas and not args.deepeval):
-            logger.info("Adding standard evaluators")
-            evaluators.extend([
-                correctness, 
-                groundedness, 
-                relevance, 
-                retrieval_relevance
-            ])
-        
-        # Add RAGAS evaluators if requested
-        if args.ragas:
-            logger.info("Adding RAGAS evaluators")
-            evaluators.extend([
-                ragas_answer_accuracy, 
-                ragas_context_relevance, 
-                ragas_faithfulness, 
-                ragas_response_relevancy
-            ])
-        
-        # Add DeepEval evaluators if requested and available
-        if args.deepeval and DEEPEVAL_AVAILABLE:
-            # Check that OpenAI API key is available (required for DeepEval)
-            if not os.getenv("OPENAI_API_KEY"):
-                logger.error("OPENAI_API_KEY environment variable is required for DeepEval to work")
-            else:
-                logger.info("Adding DeepEval evaluators")
-                evaluators.extend([
-                    deepeval_faithfulness,
-                    deepeval_geval
-                ])
-        
-        # Add BERTScore evaluator if requested and available
-        if args.bertscore and BERTSCORE_AVAILABLE:
-            logger.info("Adding BERTScore evaluator")
-            evaluators.append(bertscore_evaluator)
-            
-        # If no evaluators were added, fall back to standard evaluators
-        if not evaluators:
-            logger.warning("No evaluators selected. Falling back to standard evaluators.")
+
+        # For test set, we can only use evaluators that don't require reference answers or contexts
+        if test_set:
+            logger.info(
+                "Test set detected - using only evaluators that don't rely on reference answers or contexts"
+            )
             evaluators = [
-                correctness, 
-                groundedness, 
-                relevance, 
-                retrieval_relevance
+                # correctness,
+                ragas_answer_accuracy,
+                # relevance
+                ragas_response_relevancy,
             ]
-        
+
+            # Add DeepEval G-Eval if available (doesn't require references)
+            if args.deepeval and DEEPEVAL_AVAILABLE and os.getenv("OPENAI_API_KEY"):
+                logger.info("Adding DeepEval G-Eval evaluator for test set")
+                evaluators.append(deepeval_geval)
+
+        else:
+            # Regular validation set evaluation with all applicable evaluators
+            # Add standard evaluators - use by default if nothing else is specified or if explicitly requested
+            if args.standard or (not args.ragas and not args.deepeval):
+                logger.info("Adding standard evaluators")
+                evaluators.extend(
+                    [correctness, groundedness, relevance, retrieval_relevance]
+                )
+
+            # Add RAGAS evaluators if requested
+            if args.ragas:
+                logger.info("Adding RAGAS evaluators")
+                evaluators.extend(
+                    [
+                        ragas_answer_accuracy,
+                        ragas_context_relevance,
+                        ragas_faithfulness,
+                        ragas_response_relevancy,
+                    ]
+                )
+
+            # Add DeepEval evaluators if requested and available
+            if args.deepeval and DEEPEVAL_AVAILABLE:
+                # Check that OpenAI API key is available (required for DeepEval)
+                if not os.getenv("OPENAI_API_KEY"):
+                    logger.error(
+                        "OPENAI_API_KEY environment variable is required for DeepEval to work"
+                    )
+                else:
+                    logger.info("Adding DeepEval evaluators")
+                    evaluators.extend([deepeval_faithfulness, deepeval_geval])
+
+            # Add BERTScore evaluator if requested and available
+            if args.bertscore and BERTSCORE_AVAILABLE:
+                logger.info("Adding BERTScore evaluator")
+                evaluators.append(bertscore_evaluator)
+
+            # If no evaluators were added, fall back to standard evaluators
+            if not evaluators:
+                logger.warning(
+                    "No evaluators selected for validation set. Falling back to standard evaluators."
+                )
+                evaluators = [correctness, groundedness, relevance, retrieval_relevance]
+
         # Run the evaluation
         result = client.evaluate(
             target,
@@ -450,25 +538,25 @@ def main():
             experiment_prefix=experiment_prefix,
             metadata=rag_system.get_config(),
         )
-        
+
         elapsed_time = time.time() - start_time
         logger.info(f"Evaluation completed in {elapsed_time:.1f} seconds: {experiment_prefix}")
-        
+
         # Convert result to pandas dataframe to compute summary statistics
         result_df = result.to_pandas()
-        
+
         # Compute summary statistics
         feedback_metrics = {}
-        
+
         # Process feedback metrics
         feedback_cols = [col for col in result_df.columns if col.startswith('feedback.')]
         for col in feedback_cols:
             metric_name = col.replace('feedback.', '')
             values = result_df[col].dropna()
-            
+
             if len(values) == 0:
                 continue
-                
+
             feedback_metrics[metric_name] = {
                 'mean': float(values.mean()),
                 'median': float(values.median()),
@@ -477,7 +565,7 @@ def main():
                 'max': float(values.max()),
                 'count': int(len(values))
             }
-        
+
         # Compare output answers with reference answers
         text_stats = {}
         if 'outputs.answer' in result_df.columns and 'reference.answer' in result_df.columns:
@@ -485,7 +573,7 @@ def main():
             output_char_lens = result_df['outputs.answer'].fillna('').astype(str).apply(len)
             reference_char_lens = result_df['reference.answer'].fillna('').astype(str).apply(len)
             char_ratios = output_char_lens / reference_char_lens.replace(0, float('nan'))
-            
+
             # Word count comparison (simple word tokenization)
             output_word_counts = result_df['outputs.answer'].fillna('').astype(str).apply(
                 lambda x: len(re.findall(r'\b\w+\b', x.lower()))
@@ -494,7 +582,7 @@ def main():
                 lambda x: len(re.findall(r'\b\w+\b', x.lower()))
             )
             word_ratios = output_word_counts / reference_word_counts.replace(0, float('nan'))
-            
+
             text_stats = {
                 'character_length': {
                     'mean_output': float(output_char_lens.mean()),
@@ -507,20 +595,20 @@ def main():
                     'mean_ratio': float(word_ratios.mean())
                 }
             }
-            
+
             # Calculate TF-IDF similarity if there are enough examples
             if len(result_df) >= 2:
                 try:
                     from sklearn.feature_extraction.text import TfidfVectorizer
                     from sklearn.metrics.pairwise import cosine_similarity
-                    
+
                     outputs = result_df['outputs.answer'].fillna('').astype(str).tolist()
                     references = result_df['reference.answer'].fillna('').astype(str).tolist()
-                    
+
                     vectorizer = TfidfVectorizer()
                     all_docs = outputs + references
                     tfidf_matrix = vectorizer.fit_transform(all_docs)
-                    
+
                     n = len(outputs)
                     similarities = []
                     for i in range(n):
@@ -529,7 +617,7 @@ def main():
                             reference_vector = tfidf_matrix[i + n]
                             similarity = cosine_similarity(output_vector, reference_vector)[0][0]
                             similarities.append(similarity)
-                    
+
                     if similarities:
                         text_stats['tfidf_similarity'] = {
                             'mean': float(np.mean(similarities)),
@@ -538,7 +626,7 @@ def main():
                         }
                 except Exception as e:
                     logger.warning(f"Could not compute TF-IDF similarity: {e}")
-        
+
         # Calculate performance statistics
         performance_stats = {
             "query_time": {
@@ -572,7 +660,7 @@ def main():
                 "total": sum(total_times)
             }
         }
-        
+
         # Calculate memory statistics
         if memory_usages:
             memory_stats = {
@@ -587,7 +675,7 @@ def main():
             }
         else:
             memory_stats = {}
-            
+
         # Calculate system load statistics
         if system_loads:
             load_stats = {
@@ -600,7 +688,7 @@ def main():
                     "max": max([l["memory_percent"] for l in system_loads]),
                 }
             }
-            
+
             # Process GPU statistics if available
             gpu_available = any([l.get("gpu", {}).get("available", False) for l in system_loads])
             if gpu_available:
@@ -610,10 +698,10 @@ def main():
                     # Get device IDs from first reading
                     if "devices" in gpu_loads[0]["gpu"] and gpu_loads[0]["gpu"]["devices"]:
                         device_ids = [device["id"] for device in gpu_loads[0]["gpu"]["devices"]]
-                        
+
                         # Initialize GPU stats dictionary
                         gpu_stats = {}
-                        
+
                         for device_id in device_ids:
                             # Extract metrics for this device across all readings
                             device_metrics = []
@@ -621,7 +709,7 @@ def main():
                                 for device in load["gpu"].get("devices", []):
                                     if device["id"] == device_id:
                                         device_metrics.append(device)
-                            
+
                             if device_metrics:
                                 # Calculate statistics for this device
                                 device_name = device_metrics[0]["name"]
@@ -629,7 +717,7 @@ def main():
                                     "name": device_name,
                                     "device_id": device_id,
                                 }
-                                
+
                                 # Add memory statistics if available
                                 if "memory_used_mb" in device_metrics[0]:
                                     device_stats["memory"] = {
@@ -643,28 +731,28 @@ def main():
                                             "max": max([d["memory_percent"] for d in device_metrics]),
                                         }
                                     }
-                                
+
                                 # Add GPU utilization if available
                                 if "load_percent" in device_metrics[0]:
                                     device_stats["utilization"] = {
                                         "mean": statistics.mean([d["load_percent"] for d in device_metrics]),
                                         "max": max([d["load_percent"] for d in device_metrics]),
                                     }
-                                    
+
                                 # Add temperature if available
                                 if "temperature" in device_metrics[0]:
                                     device_stats["temperature"] = {
                                         "mean": statistics.mean([d["temperature"] for d in device_metrics]),
                                         "max": max([d["temperature"] for d in device_metrics]),
                                     }
-                                
+
                                 gpu_stats[f"device_{device_id}"] = device_stats
-                        
+
                         # Add GPU stats to load stats
                         load_stats["gpu"] = gpu_stats
         else:
             load_stats = {}
-        
+
         # Create final result data
         result_data = {
             "experiment_id": experiment_prefix,
@@ -677,22 +765,21 @@ def main():
                 "top_k": top_k,
                 "retriever_type": retriever_type,
                 "retriever_kwargs": retriever_kwargs,
+                "test_set": test_set,  # Add test_set flag to config
+                "data_type": "test" if test_set else "validation",  # Add data type used
             },
             "success": True,
             "elapsed_time": elapsed_time,
             "evaluation_type": "ragas" if use_ragas else "original",
-            "metrics": {
-                "feedback": feedback_metrics,
-                "text_comparison": text_stats
-            },
+            "metrics": {"feedback": feedback_metrics, "text_comparison": text_stats},
             "performance": {
                 "timing": performance_stats,
                 "memory": memory_stats,
                 "system_load": load_stats,
-                "sample_count": len(query_times)
-            }
+                "sample_count": len(query_times),
+            },
         }
-        
+
         # Save the results
         with open(result_file, 'w') as f:
             # Use a JSON encoder that can handle NumPy types
@@ -705,11 +792,11 @@ def main():
                     if isinstance(obj, np.ndarray):
                         return obj.tolist()
                     return super().default(obj)
-                    
+
             json.dump(result_data, f, indent=2, cls=NumpyEncoder)
-            
+
         logger.info(f"Results saved to {result_file}")
-        
+
         # Clean up resources
         if use_ragas:
             try:
@@ -718,20 +805,20 @@ def main():
                 logger.info("Cleaned up RAGAS embedding model")
             except Exception as e:
                 logger.warning(f"Failed to clear RAGAS embedding model: {e}")
-                
+
         # Force garbage collection
         gc.collect()
-        
+
         # If using CUDA, clear CUDA cache
         if torch.cuda.is_available():
             logger.info("Clearing CUDA cache")
             torch.cuda.empty_cache()
-            
+
         return 0
-    
+
     except Exception as e:
         logger.error(f"Error in evaluation {experiment_prefix}: {e}", exc_info=True)
-        
+
         # Clean up resources on error
         if use_ragas and 'embedding_model' in sys.modules.get('src.rag267.evals.ragas', {}).__dict__:
             try:
@@ -739,14 +826,14 @@ def main():
                 embedding_model.clear_embeddings()
             except Exception:
                 pass
-                
+
         # Force garbage collection
         gc.collect()
-        
+
         # If using CUDA, clear CUDA cache
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-            
+
         return 1
 
 if __name__ == "__main__":
