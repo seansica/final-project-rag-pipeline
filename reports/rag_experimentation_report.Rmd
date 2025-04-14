@@ -1,5 +1,5 @@
 ---
-title: "Optimizing Retrieval-Augmented Generation: A Systematic Evaluation of Embedding Models and Retrieval Parameters"
+title: "W267 Final Project: Optimizing RAG Through Systematic Evaluations"
 author: "Sean Sica"
 date: "`r Sys.Date()`"
 output:
@@ -7,20 +7,17 @@ output:
     toc: false
     number_sections: true
     fig_caption: true
-    keep_tex: true
-    citation_package: natbib
+    citation_package: biblatex
     latex_engine: xelatex
-header-includes:
-  - \usepackage{amsmath}
-  - \usepackage{booktabs}
-  - \usepackage{microtype}
-  - \usepackage{hyperref}
 bibliography: references.bib
+biblio-style: apa
 ---
 
 # Executive Summary
 
 I systematically evaluated RAG systems across multiple configurations to identify optimal parameters for domain-specific question answering. Through a phased experimental approach, I found that embedding model selection has less impact than query template design and retrieval parameters. The multi-qa-mpnet-base-cos-v1 embedding model with chunk size of 1024, chunk overlap of 100, and a similarity-based retriever with top-k=8 consistently delivered the best performance. Engineering-focused query templates consistently outperformed marketing templates regardless of other parameters. Larger chunk sizes and higher overlap improved context relevance, while similarity-based retrieval with appropriate top-k values yielded more faithful and accurate responses than threshold-based approaches.
+
+All code and experimental results can be found on GitHub [here](https://github.com/seansica/final-project-rag-pipeline/tree/main).
 
 # Introduction
 
@@ -52,78 +49,44 @@ I followed a three-phase approach to optimize the RAG system:
 2. **Chunking Parameter Optimization:**  After selecting the best embedding model, I experimented with different chunk sizes (256, 512, 1024, 2048 tokens) and overlaps (0, 50, 100 tokens). This phase identified a 1024-token chunk with 100-token overlap as optimal for balancing context preservation and retrieval precision.
 
 3. **Retrieval and Generation Refinement:**  Advanced retrieval strategies, including similarity-based retrieval with various top-k values (4, 8, 12), Maximum Marginal Relevance (MMR) for enhanced diversity, and similarity score thresholding, were tested. Simultaneously, distinct query templates were tailored for engineering versus marketing audiences. The engineering-focused template consistently delivered superior results.  
-   In evaluating the RAG generator, comparisons between Cohere and Mistral models revealed that Cohere not only produced higher-quality outputs but also achieved significantly faster response times, making it the preferred choice despite its network call overhead.
+   In evaluating the RAG generator, comparisons between Cohere[@cohere2024basicrag] and Mistral models revealed that Cohere not only produced higher-quality outputs but also achieved significantly faster response times, making it the preferred choice despite its network call overhead.
 
 All experiments were executed on an Amazon EC2 instance (g4dn.xlarge) featuring one NVIDIA T4 GPU, 4 vCPUs, and 16 GB of memory.
 
 ## Evaluation Process
 
-I used LangSmith to log and analyze all evaluation results throughout the experimental process. The evaluation workflow followed a structured approach to ensure comprehensive and reproducible results.
+I designed the evaluation process to ensure reproducibility and enable in-depth analysis. Initially, the `run_phased_evaluations.py` script processes the evaluation questions and logs all details, including details about each sub-step of the pipeline, to LangSmith. To enable offline analysis, the results are also saved locally.
 
-The process began with running the `run_phased_evaluations.py` script, which orchestrated the evaluation of all 78 questions in the validation set against the specified evaluation metrics. This script logged all runs and traces to LangSmith, providing a detailed record of each evaluation step. Each question generated a trace that broke down each sub-step of the pipeline, including retrieval time from the vector store, which documents were retrieved, and the final templated input before processing through the RAG system's LLM. This detailed tracing enabled thorough analysis of where different configurations succeeded or failed.
+After data logging, the evaluation metrics for each configuration are aggregated into an unweighted, normalized composite score using the `analyze_top_performers.py` script. This approach facilitates a clear ranking of the various RAG system configurations to help identify the best performing configuration. Future iterations of the study may explore incorporating weighting mechanisms to prioritize the most critical metrics.
 
-In addition to LangSmith logging, the script recorded all runs to local JSON files for offline analysis. This redundancy ensured data preservation and allowed for custom analysis approaches beyond what LangSmith natively offers. After completing the evaluations, I analyzed the results using a custom script, `analyze_top_performers.py`, which identified the top-performing RAG system configurations based on an un-weighted, normalized aggregate of all relevant evaluation metrics. This script produced rankings of configurations and highlighted performance patterns across different parameter combinations. For future work, I would implement a weighting mechanism to give preference to evaluation metrics deemed more important by researchers for specific use cases.
-
-The final step involved running statistical analysis using the `analyze_statistical_significance.py` script. This ensured that the findings were statistically significant and helped quantify effect sizes for different parameter changes. Additionally, I conducted regression analyses to identify correlations between independent variables and evaluation metrics, which revealed important relationships between configuration choices and performance outcomes.
-
-I also evaluated Cohere and Mistral for use as the RAG generator. After running many full evaluations, I decided to exclusively use Cohere for two reasons:
-
-Mistral's output was substantively worse than Cohere's output.
-
-Perhaps more importantly, the performance of Mistral was egregious compared to Cohere despite the network call latency associated with Cohere. RAG pipelines took upwards of 25 seconds to fulful because my development machine was too underpowered for Mistral to run effectively. And this was with 4 bit quantization. It's likely that the 4-bit quantization also significnatly degraded the output compared to Cohere.
-
-All development was done on an Amazon EC2 instance of type g4dn.xlarge, which contains one T4 GPU, 4 vCPUs, and 16 GB of memory. It's likely that an A100 would have allowed for Mistral to run more performantly, but it was cost prohibitive.
+The final step involves confirming statistical significance using the `analyze_statistical_significance.py` script, which conducted both ANOVA and regression analyses to uncover correlations between configuration choices and performance outcomes. A comparative analysis between the Cohere and Mistral models further demonstrated that, despite potential network latency, Cohere delivered notably higher quality outputs and faster responses—Mistral often required upwards of 25 seconds per request due to challenges like 4-bit quantization. Consequently, Cohere was selected as the sole generator for the RAG pipeline.
 
 ## Testing and Evaluation
 
-I evaluated system performance using 13 distinct metrics across three categories:
+System performance was measured using 13 distinct metrics that fall into three main groups. The first group comprises Simple Metrics, which use a binary LLM-as-judge approach. These include measures of Groundedness (whether the RAG response is factually consistent with the provided context), Retrieval Relevance (if the retrieved documents are pertinent to the question), Relevance (whether the answer is aligned with the question), and Correctness (if the answer agrees with the reference ground truth). These metrics were implemented manually, following guidance from a tutorial from LangChain's documentation[@langchain2024evaluaterag].
 
-- Simple Metrics (Binary LLM-as-judge):
+The second group consists of the RAGAS[@es2023ragasautomatedevaluationretrieval] Metrics[@ragas2024availablemetrics], which adopt a normalized LLM-as-judge strategy. This set includes [Faithfulness](https://docs.ragas.io/en/latest/concepts/metrics/available_metrics/faithfulness/), which corresponds to Groundedness; [Context Relevance](https://docs.ragas.io/en/latest/concepts/metrics/available_metrics/nvidia_metrics/#context-relevance), equivalent to Retrieval Relevance; [Response Relevance](https://docs.ragas.io/en/latest/concepts/metrics/available_metrics/answer_relevance/), which mirrors Relevance; and [Answer Accuracy](https://docs.ragas.io/en/latest/concepts/metrics/available_metrics/nvidia_metrics/), analogous to Correctness. Unlike the binary scoring of the Simple Metrics, RAGAS metrics generally require at least two inference calls per evaluation. For instance, where Simple Correctness offers a binary score, RAGAS Answer Accuracy involves independent judgments that are normalized into 0.25-increment scores, resulting in more stable mean values across the evaluation set.
 
-  - Groundedness: Is the RAG response factually consistent with the provided context?
-  - Retrieval Relevance: Are the retrieved documents pertinent to the question?
-  - Relevance: Is the answer relevant to the question?
-  - Correctness: Is the answer in agreement with the reference ground truth?
+Additional metrics further complemented these evaluations. This group includes the [DeepEval G-Eval](https://www.deepeval.com/docs/metrics-llm-evals) framework, which leverages chain-of-thought reasoning to assess almost any use case with human-like accuracy, and [DeepEval Faithfulness](https://www.deepeval.com/docs/metrics-faithfulness), which focuses on measuring contradictions between the generated output and the retrieval context rather than hallucinations within the LLM itself (DeepEval suggests that this metric measures hallucination in RAG systems). Moreover, [BERTScore](https://github.com/Tiiiger/bert_score) was used to determine semantic similarity between the response and the reference, while word count and character count served as heuristic measures to compare the lengths of the outputs with the reference answers.
 
-These metrics were implemented manually, by me, following a [tutorial from LangChain's documentation](https://docs.smith.langchain.com/evaluation/tutorials/rag#correctness-response-vs-reference-answer).
+Testing was carried out on 78 domain-specific questions with established reference answers. Every experimental configuration processed all these questions, with statistical significance determined through ANOVA tests (reporting F-values and p-values), pairwise t-tests, and regression analyses to uncover correlations between configuration choices and performance outcomes. For the LLM-as-judge evaluations (which constituted 10 of the 13 metrics) I used GPT-4o as the judge model.
 
-- RAGAS Metrics (Normalized LLM-as-judge):
-
-  - [Faithfulness](https://docs.ragas.io/en/latest/concepts/metrics/available_metrics/faithfulness/): Equivalent to Groundedness (above).
-  - [Context Relevance](https://docs.ragas.io/en/latest/concepts/metrics/available_metrics/nvidia_metrics/#context-relevance): Equivalent to Retrieved Relevance (above).
-  - [Response Relevance](https://docs.ragas.io/en/latest/concepts/metrics/available_metrics/answer_relevance/): Equivalent to Relevance (above).
-  - [Answer Accuracy](https://docs.ragas.io/en/latest/concepts/metrics/available_metrics/nvidia_metrics/): Equivalent to Correctness (above).
-
-- Additional Metrics:
-
-  - [DeepEval G-Eval](https://www.deepeval.com/docs/metrics-llm-evals): Framework using LLM-as-judge with chain-of-thought. The authors of DeepEval claim that G-Eval most versatile metric they have to offer, claiming that it is capable of evaluating almost any use case with human-like accuracy.
-  - [DeepEval Faithfulness](https://www.deepeval.com/docs/metrics-faithfulness): Measures hallucination in RAG systems. Although similar to the Hallucination metric, the DeepEval Faithfulness metric is more concerned with contradictions between the actual output and retrieval context in RAG pipelines, rather than hallucination in the actual LLM itself.
-  - [BERTScore](https://github.com/Tiiiger/bert_score): Semantic similarity between response and reference
-  - Word count and character count: Heuristic length metrics comparing hte actual output to the reference output
-
-Testing was conducted on a set of 78 domain-specific questions with reference answers. Each experimental configuration processed all questions, with results analyzed for statistical significance using ANOVA tests (producing F-values and p-values), pairwise t-tests between configurations, and regression analyses to determine correlations between parameters and performance metrics. For all LLM-as-judge evaluations (10 of the 13 metrics), I used GPT-4o as the judge model.
-
-My metric selection evolved throughout the research process. I initially developed the four Simple Metrics from scratch following the intuition that I should measure relationships between the four pertinent components of any RAG system: the input question, retrieved contexts, output answer, and reference answer. These essential relationships form the foundation of RAG evaluation.
-
-Unsatisfied with these initial results, further research led me to discover the equivalent RAGAS metrics, which appeared more robust in their implementation. I implemented these alongside my simple metrics to compare performance, specifically to determine if the simpler (and less computationally expensive) metrics could approximate the more sophisticated RAGAS evaluations at lower cost. The Simple Metrics and RAGAS Metrics measure similar concepts but differ in methodology. The Simple Metrics use a single inference request per question-answer pair to produce binary scores, while RAGAS metrics typically involve at least two inference calls. For example, while Simple Correctness produces a binary score about agreement with the reference answer, RAGAS Answer Accuracy performs two independent judge passes with scores from 0 to 2, then normalizes them to produce increments of 0.25. This results in more stable means across the full evaluation set.
-
-Still seeking more reliable evaluation signals, I explored additional evaluation frameworks and discovered DeepEval. Their G-Eval metric particularly impressed me during preliminary testing, demonstrating promising results that aligned well with my human judgment. As the research progressed, I came to rely on G-Eval as a key measure of success, giving it more weight in my human analysis compared to other metrics, though I maintained the full suite to ensure comprehensive evaluation across multiple dimensions.
+Metric selection evolved throughout the research process. I initially developed the Simple Metrics based on the fundamental relationships among the input question, retrieved contexts, output answer, and reference answer. However, subsequent research revealed that employing the normalized RAGAS metrics offered a more robust evaluation framework. To further validate these methods, I incorporated the DeepEval framework, particularly its G-Eval metric, which consistently aligned with my human judgment.
 
 # Results and Findings
 
 ## Proof of Concept Functionality
 
-Overall, the RAG system successfully demonstrated the ability to answer domain-specific questions with high factual accuracy.
+The RAG system successfully demonstrated the ability to answer domain-specific questions with high factual accuracy. Although several embedding models were evaluated, statistical analysis revealed that differences among them were minimal—only about 5% of pairwise comparisons showed statistical significance. The multi-qa-mpnet-base-cos-v1 model performed marginally better; however, the variation in evaluation scores was so slight that the choice of embedding model appears less critical than other configuration parameters.
 
-Regarding embedding model performance, despite testing various models, statistical analysis revealed minimal significant differences between them, with only about 5% of comparisons showing statistical significance. The multi-qa-mpnet-base-cos-v1 model performed marginally better, but the difference was within statistical noise, suggesting that embedding model selection is less critical than other parameters in the overall RAG pipeline performance. Regardless, the variation in evaluation scores across the five embedding models were minuscule, with the regression test indicating a nonexistent relationship between the independent variable (the embedding model) and evaluation outcomes.k
+In contrast, chunking parameters had a substantial impact on performance metrics. Experiments consistently showed that a chunk size of 1024 tokens combined with a 100-token overlap yielded the best results. This combination significantly improved context relevance, as indicated by statistically significant p-values in metrics such as ragas_faithfulness, DeepEval Faithfulness, G-Eval, and BERTScore[@zhang2020bertscoreevaluatingtextgeneration]. Larger chunks with moderate overlap effectively preserved related information, thereby enhancing overall system performance.
 
-The chunk size and overlap parameters had a substantial impact on performance metrics. A chunk size of 1024 tokens with 100 token overlap consistently produced the best results across evaluations. ragas_faithfulness, DeepEval Faithfulness, G-Eval, and BERTScore all had p-values below 0.05 in the ANOVA, implying real differences among experiments. Also, the data suggested that larger chunks with more overlap improved context relevance by keeping related information together, which contributed to better overall system performance. The rest of the metrics appear to depend more on other factors beyond chunk size/overlap (i.e., most of the metrics are unexplained by the phase 2 independent variables).
+Retrieval method selection emerged as the most influential parameter. Similarity-based retrieval with a top-k value of 8 consistently outperformed alternative strategies. In comparison, methods like Maximum Marginal Relevance produced a more diverse yet sometimes less precise set of results, while similarity score thresholding at 0.8 often retrieved no data at all, leading to a collapse in performance.
 
-Retrieval method selection demonstrated the most pronounced impact on performance among all tested parameters. Similarity-based retrieval with top-k=8 consistently outperformed other strategies in most metrics. Maximum Marginal Relevance (MMR) provided more diverse but sometimes less precise results, which could be beneficial depending on the specific use case. Notably, similarity score thresholding at 0.8 often retrieved nothing, causing performance collapse in those configurations. The evaluation also revealed that DeepEval faithfulness was extremely sensitive to retriever method changes, making it a particularly useful signal for optimizing RAG retrieval strategies.
+Additionally, the configuration of the generator template had a significant impact, with the engineering-oriented template outperforming the marketing version across all experiments. A sizable effect (reflected in an effect size of d=0.70 for relevance metrics) suggests that technical precision in question formulation directly improves retrieval quality, even if the final output is later adjusted for a non-technical audience.
 
-The generator template type showed significant influence on system performance. The engineering template consistently outperformed the marketing template across all configurations, with the largest effect size (d=0.70) observed for relevance metrics. This suggests that how questions are framed significantly impacts retrieval quality, with technically precise formulations yielding better results even when the final response might need to be adapted for non-technical audiences.
+Finally, performance metrics for system resource usage further validated the setup. The Cohere implementation consumed approximately 1.3 GB of memory and produced responses within 2–5 seconds, while vector retrieval operations took roughly 0.25 seconds. Thus, the overall latency is primarily attributable to the language model generation phase.
 
-In terms of system performance metrics, the Cohere implementation used approximately 1330 MB of memory with response times averaging 2-5 seconds. The non-LLM components (specifically vector retrieval) completed in about 0.25 seconds, indicating that most latency came from the LLM generation phase rather than retrieval operations. This insight suggests that optimization efforts for production systems should focus primarily on generation efficiency rather than retrieval speed.
 
 # Lessons Learned
 
@@ -143,30 +106,9 @@ Non-Technical Insights:
 
 # Challenges and Limitations
 
-Several significant limitations emerged during the experimental process:
+The experimental process revealed several key challenges. Different evaluation frameworks sometimes produced conflicting results. DeepEval’s faithfulness metric tended to be more lenient than RAGAS assessments. In addition, using LLMs as evaluators introduces subjective biases that can affect score objectivity. Notably, many performance differences did not reach statistical significance, suggesting that either the sample size was too small or the parameter adjustments were too subtle to yield definitive outcomes.
 
-Metric inconsistency presented a notable challenge, as different evaluation frameworks sometimes yielded contradictory results. This inconsistency complicated the determination of an optimal configuration. For instance, DeepEval's faithfulness metric consistently rated systems favorably (95th percentile), while RAGAS faithfulness assessments were markedly more stringent. This discrepancy highlights the importance of employing multiple evaluation frameworks when assessing RAG systems.
-
-The utilization of large language models as evaluation judges introduced potential methodological concerns regarding subjectivity. These models may exhibit inherent biases toward specific response patterns or writing styles, potentially compromising the objectivity of evaluation scores. Future research should investigate methods to mitigate these biases through calibration techniques or alternative evaluation approaches.
-
-Many observed performance differences did not achieve statistical significance. This suggests that either a larger test corpus or more pronounced parameter adjustments would be necessary to draw definitive conclusions. It also suggests the need for robust experimental design.
-
-Attribution of performance improvements presented another methodological challenge. It was often difficult to determine whether factual accuracy resulted from successful retrieval or from the language model's pre-existing knowledge. This ambiguity complicates the isolation of retrieval quality as an independent variable and highlights the need for more sophisticated attribution mechanisms in RAG evaluation.
-
-Resource constraints necessitated a phased experimental approach rather than a comprehensive factorial design. While this methodology was practical, it potentially overlooked optimal parameter combinations that might exist across phase boundaries. A full factorial design would have required thousands of experimental runs, which was not feasible given my budget.
-
-Financial considerations significantly impacted the research scope. The evaluation methodology often required multiple LLM judge calls per question-answer pair, resulting in substantial API expenses exceeding $300 for GPT-4o alone. Additional costs included LangSmith storage fees, virtual machine rental, and Cohere API charges. This financial burden represents a significant barrier to entry for comprehensive RAG research, particularly for researchers without access to institutional resources.
-
-Hardware limitations further constrained model selection options. The NVIDIA T4 GPU available on the g4dn.xlarge instance (AWS EC2) proved inadequate for efficient Mistral model inference. A typical RAG pipeline utilizing self-hosted Mistral required approximately 24 seconds for completion, compared to 2-3 seconds for Cohere's API service—despite the inherent network latency disadvantage of the latter. This performance disparity can be attributed to insufficient computational capacity for efficient model inference.
-
-With additional time and resources, several promising directions could be explored:
-
-- Hybrid Retrieval Strategies: Combining MMR for diversity with similarity-based filtering could potentially yield better results than either approach alone.
-- Parameter Fine-Tuning: More granular exploration of chunk sizes, and an expanded evaluation range (e.g., 128-6144) and overlap percentages could identify more precise optimal values, as well as performance inflection points.
-- Prompt Engineering Optimization: Systematic evaluation of different prompt structures for both retrieval and generation could further enhance performance.
-- Cross-Domain Testing: Evaluating the best configurations on different document types and domains would test the generalizability of findings.
-- LLM Comparison: Comparing performance across different foundation models (e.g., Mistral, Claude, GPT-4) would help isolate the effects of the retrieval component versus the LLM capabilities. This could be done by expanding the range of acceptable generator models, and by exploring the relationship between generator LLMs and evaluator LLMs to the presence of bias penalties implicit to the evaluator LLM.
-
+Resource constraints further limited the study. A phased approach was necessary, potentially missing some optimal parameter combinations, and the financial burden from API calls and hardware limitations (such as using an NVIDIA T4 GPU) constrained experimentation. For instance, self-hosted models like Mistral required around 24 seconds per request compared to Cohere’s 2–3 seconds. Future work should explore hybrid retrieval strategies, finer parameter tuning, improved prompt engineering, and broader cross-domain testing with additional models.
 
 # Summary & Recommendations
 
@@ -180,6 +122,6 @@ Based on the experimental results, I recommend implementing a production RAG sys
 
 This configuration consistently delivered the best overall performance across metrics and demonstrated robust behavior across different question types. The engineering template's superior performance suggests that technical precision in question formulation benefits retrieval quality, even when the final response will be adapted for non-technical audiences.
 
-The system's modest resource requirements (1330 MB memory, 2-5 second response time) make it viable for research environments with minimal infrastructure. The fact that vector retrieval comprises only a small portion of the overall latency (0.25 seconds) suggests that optimization efforts should focus on LLM inference rather than retrieval operations.
+The system's modest resource requirements (1.3 GB MB memory, 2-5 second response time) make it viable for research environments with minimal infrastructure. The fact that vector retrieval comprises only a small portion of the overall latency (0.25 seconds) suggests that optimization efforts should focus on LLM inference rather than retrieval operations.
 
 For future development, establishing a continuous evaluation pipeline would enable ongoing refinement as document collections grow and query patterns evolve. The significant impact of template design also suggests that A/B testing different query formulations could yield substantial performance improvements with minimal implementation costs.
