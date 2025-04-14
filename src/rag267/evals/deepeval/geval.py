@@ -55,11 +55,14 @@ def deepeval_geval(run: Run, example: Example) -> float:
         logger.warning(f"No generated answer found for question: {question[:50]}...")
         return 0.0
     
-    # Get the expected answer from the reference
-    expected_answer = example.outputs.get('answer', '')
+    # Get the expected answer from the reference if available
+    expected_answer = ""
+    if example.outputs is not None:
+        expected_answer = example.outputs.get('answer', '')
+    
     if not expected_answer:
-        logger.warning(f"No expected answer found in example for question: {question[:50]}...")
-        # We can still evaluate without an expected answer, but it's less reliable
+        logger.info(f"No expected answer found in example for question: {question[:50]}...")
+        logger.info("This is normal for test set evaluations without reference answers")
     
     # Get the retrieved documents from outputs
     retrieved_docs = []
