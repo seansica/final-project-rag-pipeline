@@ -88,9 +88,8 @@ The final step involved running statistical analysis using the `analyze_statisti
 
 I also evaluated Cohere and Mistral for use as the RAG generator. After running many full evaluations, I decided to exclusively use Cohere for two reasons:
 
-Mistral's output was substantively worse than Cohere's output.
-
-Perhaps more importantly, the performance of Mistral was egregious compared to Cohere despite the network call latency associated with Cohere. RAG pipelines took upwards of 25 seconds to fulful because my development machine was too underpowered for Mistral to run effectively. And this was with 4 bit quantization. It's likely that the 4-bit quantization also significnatly degraded the output compared to Cohere.
+  1. Mistral's output was substantively worse than Cohere's output.
+  2. Perhaps more importantly, the performance of Mistral was egregious compared to Cohere despite the network call latency associated with Cohere. RAG pipelines took upwards of 25 seconds to fulful because my development machine was too underpowered for Mistral to run effectively. And this was with 4 bit quantization. It's likely that the 4-bit quantization also significnatly degraded the output compared to Cohere.
 
 All development was done on an Amazon EC2 instance of type g4dn.xlarge, which contains one T4 GPU, 4 vCPUs, and 16 GB of memory. It's likely that an A100 would have allowed for Mistral to run more performantly, but it was cost prohibitive.
 
@@ -122,6 +121,8 @@ These metrics were implemented manually, by me, following a [tutorial from LangC
   - Word count and character count: Heuristic length metrics comparing hte actual output to the reference output
 
 Testing was conducted on a set of 78 domain-specific questions with reference answers. Each experimental configuration processed all questions, with results analyzed for statistical significance using ANOVA tests (producing F-values and p-values), pairwise t-tests between configurations, and regression analyses to determine correlations between parameters and performance metrics. For all LLM-as-judge evaluations (10 of the 13 metrics), I used GPT-4o as the judge model.
+
+11 of the 13 metrics (all LLM-as-judge evaluations plus BERTScore) were recorded in LangSmith. The remaining two metrics—character count and word count—were simpler heuristics logged offline. I was inspired to track these length metrics because my initial generator templates produced good content that was substantially more verbose than the reference answers. I tracked the ratio between generated and reference lengths, working under the assumption that a high BERTScore similarity combined with a word/character count ratio close to 1.0 would indicate output very close to the reference answer.
 
 My metric selection evolved throughout the research process. I initially developed the four Simple Metrics from scratch following the intuition that I should measure relationships between the four pertinent components of any RAG system: the input question, retrieved contexts, output answer, and reference answer. These essential relationships form the foundation of RAG evaluation.
 
