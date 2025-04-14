@@ -4,36 +4,19 @@ author: "Sean Sica"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
-    toc: true
+    toc: false
     number_sections: true
     fig_caption: true
     keep_tex: true
     citation_package: natbib
     latex_engine: xelatex
-  html_document:
-    toc: true
-    toc_depth: 3
-    theme: paper
 header-includes:
   - \usepackage{amsmath}
   - \usepackage{booktabs}
   - \usepackage{microtype}
   - \usepackage{hyperref}
 bibliography: references.bib
-abstract: |
- In this paper, I present a systematic evaluation of RAG systems across various configurations of embedding models, retrieval strategies, and generation parameters. I conducted multi-phased experiments to identify optimal combinations for domain-specific question answering tasks. My results demonstrate that embedding model selection has minimal impact on overall performance, while contextual alignment between the RAG corpus and query formulation significantly influences output quality. Despite finding correlations between configuration parameters and evaluation metrics, most results lacked statistical significance due to limited sample size. The most consistent finding was that similarity-based retrieval with top-k values (particularly top-k=8) outperformed more complex retrieval methods, while larger chunk sizes (1024 tokens) with moderate overlap (100 tokens) provided optimal context preservation. I provide a comparative analysis of performance metrics including G-Eval, hallucination, BERTScore, faithfulness, context relevance, and answer accuracy, offering insights for practitioners implementing RAG systems. My findings contribute to the growing body of knowledge on effectively designing and optimizing RAG pipelines for production applications.RetryClaude can make mistakes. Please double-check responses.
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
-                     fig.width = 7, fig.height = 5, fig.align = "center",
-                     out.width = "80%")
-library(ggplot2)
-library(dplyr)
-library(readr)
-library(knitr)
-library(kableExtra)
-```
 
 # Executive Summary
 
